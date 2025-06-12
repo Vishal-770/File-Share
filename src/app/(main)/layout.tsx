@@ -3,6 +3,7 @@ import AppNavBar from "@/components/AppNavBar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import React, { ReactNode } from "react";
 import { cookies } from "next/headers";
+import { Toaster } from "@/components/ui/sonner";
 const DashboardLayout = async ({ children }: { children: ReactNode }) => {
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
@@ -14,6 +15,7 @@ const DashboardLayout = async ({ children }: { children: ReactNode }) => {
         <AppNavBar />
         <div className="px-4"> {children}</div>
       </main>
+      <Toaster />
     </SidebarProvider>
   );
 };

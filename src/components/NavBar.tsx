@@ -84,7 +84,7 @@ export function NavbarDemo() {
             ))}
             <div className="flex w-full flex-col gap-4">
               <SignedOut>
-                <SignInButton>
+                <SignInButton mode="modal">
                   <Button>SignIn</Button>
                 </SignInButton>
               </SignedOut>

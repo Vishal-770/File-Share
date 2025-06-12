@@ -1,14 +1,18 @@
 "use client";
+
 import FilePreview from "@/components/FilePreview";
 import FileUpload from "@/components/FileUpload";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { toast } from "sonner";
+import { supabase } from "@/database/supabase/supabase";
 import React, { useState } from "react";
 
 const Dashboard = () => {
   const [file, setFile] = useState<File | null>(null);
-  const [errmsg, setErrmsg] = useState<boolean>(false);
-  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
+  const [errmsg, setErrmsg] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const UploadFile = (file: File) => {
     if (file && file.size > 2_000_000) {
@@ -18,34 +22,39 @@ const Dashboard = () => {
       setErrmsg(false);
       setFile(file);
     }
-    console.log(file);
   };
 
   const UploadButtonClicked = async () => {
     if (!file) return;
 
     setIsUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
+    setProgress(0);
 
-    try {
-      const res = await fetch("/api/uploads", {
-        method: "POST",
-        body: formData,
+    const filePath = `${Date.now()}-${file.name}`;
+    const { data, error } = await supabase.storage
+      .from("uploads")
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: false,
       });
+    console.log(data);
 
-      if (!res.ok) {
-        throw new Error("Upload failed");
-      }
-
-      const data = await res.json();
-      setUploadedUrl(data.url);
-      setFile(null); // clear after upload
-    } catch (err) {
-      console.error("Upload error:", err);
-    } finally {
-      setIsUploading(false);
+    if (error) {
+      toast("Upload Failed", {
+        description: error.message,
+        action: {
+          label: "Retry",
+          onClick: () => UploadButtonClicked(),
+        },
+      });
+    } else {
+      toast("Upload Successful", {
+        description: "File uploaded to Supabase.",
+      });
+      setFile(null);
     }
+
+    setIsUploading(false);
   };
 
   return (
@@ -66,42 +75,22 @@ const Dashboard = () => {
 
       {file && <FilePreview file={file} setfile={setFile} />}
 
+      {isUploading && (
+        <div className="mx-5 xl:mx-40">
+          <Progress value={progress} />
+          <p className="text-center mt-2 text-muted-foreground">Uploading...</p>
+        </div>
+      )}
+
       <div className="flex items-center justify-center">
         <Button
           onClick={UploadButtonClicked}
           disabled={!file || isUploading}
-          className="w-70 h-12"
+          className="w-40 h-12"
         >
           {isUploading ? "Uploading..." : "Upload"}
         </Button>
       </div>
-
-      {uploadedUrl && (
-        <p className="text-center text-green-600 mt-4">
-          File uploaded:{" "}
-          <a
-            href={uploadedUrl}
-            target="_blank"
-            className="text-blue-600 underline"
-          >
-            {uploadedUrl}
-          </a>
-        </p>
-      )}
-      {uploadedUrl && (
-        <p className="text-center text-green-600 mt-4">
-          File uploaded:&nbsp;
-          <a
-            href={uploadedUrl}
-            download
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 underline"
-          >
-            Download File
-          </a>
-        </p>
-      )}
     </div>
   );
 };
