@@ -38,7 +38,7 @@ const Dashboard = () => {
     setIsUploading(true);
     setProgress(0);
 
-    const filePath = `${Date.now()}-${file.name}`;
+    const filePath = `fileuploads/${Date.now()}-${file.name}`;
     const { data, error } = await supabase.storage
       .from("uploads")
       .upload(filePath, file, {
@@ -61,6 +61,7 @@ const Dashboard = () => {
     const { data: urlData } = supabase.storage
       .from("uploads")
       .getPublicUrl(filePath);
+    console.log(filePath);
 
     await UploadFileDetails({
       clerkId,
@@ -68,9 +69,9 @@ const Dashboard = () => {
       fileType: file?.type ?? "unknown",
       fileUrl: urlData?.publicUrl ?? "unknown",
       size: file?.size ?? 0,
-      filePath: data.fullPath,
+      filePath,
     });
-
+    console.log(data.fullPath);
     toast("Upload Successful", {
       description: "File successfully uploaded",
     });

@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
       fileUrl,
       size,
       clerkId,
+      filePath,
     });
     await newFile.save();
     return NextResponse.json(
