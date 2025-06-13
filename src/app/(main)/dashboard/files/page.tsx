@@ -91,134 +91,141 @@ const FileTablePage = () => {
           You haven&#39;t uploaded any files yet.
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <Table className="min-w-full">
-            <TableHeader className="hidden sm:table-header-group">
-              <TableRow>
-                <TableHead>File Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Uploaded At</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.files.map((file: FileDetails) => (
-                <TableRow
-                  key={file._id}
-                  className="block sm:table-row mb-4 sm:mb-0"
-                >
-                  {/* Mobile View (Stacked) */}
-                  <div className="sm:hidden p-4 border rounded-lg">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="font-medium truncate max-w-[180px]">
-                        {file.fileName}
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() =>
-                            handleDownload(file.fileUrl, file.fileName)
-                          }
-                          className="h-8 w-8"
-                        >
-                          <Download className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          asChild
-                          className="h-8 w-8"
-                        >
-                          <a
-                            href={file.fileUrl}
-                            download
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </a>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                          onClick={() => setSelectedFileUrl(file._id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
-                      <div>
-                        <span className="font-medium">Type:</span>{" "}
-                        {file.fileType}
-                      </div>
-                      <div>
-                        <span className="font-medium">Size:</span>{" "}
-                        {(file.size / 1024).toFixed(2)} KB
-                      </div>
-                      <div>
-                        <span className="font-medium">Uploaded:</span>{" "}
-                        {format(new Date(file.createdAt), "dd MMM yyyy")}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Desktop View (Table) */}
-                  <TableCell className="hidden sm:table-cell max-w-[200px] truncate">
+        <>
+          {/* Mobile View */}
+          <div className="sm:hidden space-y-4">
+            {data.files.map((file: FileDetails) => (
+              <div
+                key={file._id}
+                className="p-4 border rounded-lg shadow-sm text-sm"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div className="font-medium truncate max-w-[180px]">
                     {file.fileName}
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    {file.fileType}
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    {(file.size / 1024).toFixed(2)} KB
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    {format(new Date(file.createdAt), "dd MMM yyyy HH:mm")}
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell text-right space-x-2">
+                  </div>
+                  <div className="flex space-x-2">
                     <Button
-                      variant="outline"
-                      size="sm"
+                      variant="ghost"
+                      size="icon"
                       onClick={() =>
                         handleDownload(file.fileUrl, file.fileName)
                       }
-                      className="h-8"
+                      className="h-8 w-8"
                     >
-                      <Download className="w-4 h-4 mr-1" />
-                      <span className="sr-only sm:not-sr-only">Download</span>
+                      <Download className="w-4 h-4" />
                     </Button>
-                    <Button variant="outline" size="sm" asChild className="h-8">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      asChild
+                      className="h-8 w-8"
+                    >
                       <a
                         href={file.fileUrl}
                         download
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <Eye className="w-4 h-4 mr-1" />
-                        <span className="sr-only sm:not-sr-only">View</span>
+                        <Eye className="w-4 h-4" />
                       </a>
                     </Button>
                     <Button
-                      variant="destructive"
-                      size="sm"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:text-destructive"
                       onClick={() => setSelectedFileUrl(file._id)}
-                      className="h-8"
                     >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      <span className="sr-only sm:not-sr-only">Delete</span>
+                      <Trash2 className="w-4 h-4" />
                     </Button>
-                  </TableCell>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-muted-foreground">
+                  <div>
+                    <span className="font-medium">Type:</span> {file.fileType}
+                  </div>
+                  <div>
+                    <span className="font-medium">Size:</span>{" "}
+                    {(file.size / 1024).toFixed(2)} KB
+                  </div>
+                  <div>
+                    <span className="font-medium">Uploaded:</span>{" "}
+                    {format(new Date(file.createdAt), "dd MMM yyyy")}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop View */}
+          <div className="hidden sm:block overflow-x-auto">
+            <Table className="min-w-full">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>File Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Size</TableHead>
+                  <TableHead>Uploaded At</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {data.files.map((file: FileDetails) => (
+                  <TableRow key={file._id}>
+                    <TableCell className="max-w-[200px] truncate">
+                      {file.fileName}
+                    </TableCell>
+                    <TableCell>{file.fileType}</TableCell>
+                    <TableCell>{(file.size / 1024).toFixed(2)} KB</TableCell>
+                    <TableCell>
+                      {format(new Date(file.createdAt), "dd MMM yyyy HH:mm")}
+                    </TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          handleDownload(file.fileUrl, file.fileName)
+                        }
+                        className="h-8"
+                      >
+                        <Download className="w-4 h-4 mr-1" />
+                        <span className="sr-only sm:not-sr-only">Download</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        asChild
+                        className="h-8"
+                      >
+                        <a
+                          href={file.fileUrl}
+                          download
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          <span className="sr-only sm:not-sr-only">View</span>
+                        </a>
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setSelectedFileUrl(file._id)}
+                        className="h-8"
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        <span className="sr-only sm:not-sr-only">Delete</span>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
       )}
 
+      {/* Delete Dialog */}
       <Dialog
         open={!!selectedFileUrl}
         onOpenChange={() => setSelectedFileUrl(null)}
