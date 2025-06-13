@@ -49,3 +49,20 @@ export const DeleteFileDetails = async (id: string) => {
     }
   }
 };
+export interface UpdateFileNameData {
+  _id: string;
+  fileName: string;
+}
+
+export const UpdateFileName = async (
+  data: UpdateFileNameData
+): Promise<void> => {
+  try {
+    const res = await api.patch("/api/rename", data);
+    console.log(res);
+  } catch (err) {
+    if (err instanceof Error) {
+      console.log(err);
+    }
+  }
+};

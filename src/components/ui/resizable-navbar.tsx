@@ -7,9 +7,9 @@ import {
   useScroll,
   useMotionValueEvent,
 } from "motion/react";
-import Image from "next/image";
 
 import React, { useRef, useState } from "react";
+import Image from "next/image";
 
 interface NavbarProps {
   children: React.ReactNode;
