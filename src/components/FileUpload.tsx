@@ -39,6 +39,7 @@ const FileUpload = ({ setFile }: { setFile: (file: File) => void }) => {
             onChange={(e) => {
               if (e.target.files && e.target.files[0]) {
                 setFile(e.target.files[0]);
+                e.target.value = ""; 
               }
             }}
           />

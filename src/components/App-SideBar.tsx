@@ -1,4 +1,4 @@
-import { Calendar, Search, Settings, Upload, File } from "lucide-react";
+import { HomeIcon, Settings, Upload, File } from "lucide-react";
 
 import {
   Sidebar,
@@ -14,6 +14,11 @@ import {
 // Menu items.
 const items = [
   {
+    title: "Home",
+    url: "/",
+    icon: HomeIcon,
+  },
+  {
     title: "Upload",
     url: "/dashboard",
     icon: Upload,
@@ -23,16 +28,7 @@ const items = [
     url: "/dashboard/files",
     icon: File,
   },
-  {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
+
   {
     title: "Settings",
     url: "#",

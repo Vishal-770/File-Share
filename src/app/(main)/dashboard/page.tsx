@@ -7,15 +7,20 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { supabase } from "@/database/supabase/supabase";
 import React, { useState } from "react";
+import { useUser } from "@clerk/nextjs";
+import { UploadFileDetails } from "@/services/service";
+import Image from "next/image";
 
 const Dashboard = () => {
   const [file, setFile] = useState<File | null>(null);
   const [errmsg, setErrmsg] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const { user, isLoaded } = useUser();
+  const clerkId = user?.id;
 
   const UploadFile = (file: File) => {
-    if (file && file.size > 2_000_000) {
+    if (file && file.size > 2_097_152) {
       setErrmsg(true);
       setFile(null);
     } else {
@@ -25,7 +30,10 @@ const Dashboard = () => {
   };
 
   const UploadButtonClicked = async () => {
-    if (!file) return;
+    if (!file || !clerkId) {
+      toast.error("User not authenticated or file not selected");
+      return;
+    }
 
     setIsUploading(true);
     setProgress(0);
@@ -37,7 +45,6 @@ const Dashboard = () => {
         cacheControl: "3600",
         upsert: false,
       });
-    console.log(data);
 
     if (error) {
       toast("Upload Failed", {
@@ -47,15 +54,38 @@ const Dashboard = () => {
           onClick: () => UploadButtonClicked(),
         },
       });
-    } else {
-      toast("Upload Successful", {
-        description: "File uploaded to Supabase.",
-      });
-      setFile(null);
+      setIsUploading(false);
+      return;
     }
 
+    const { data: urlData } = supabase.storage
+      .from("uploads")
+      .getPublicUrl(filePath);
+
+    await UploadFileDetails({
+      clerkId,
+      fileName: file.name ?? data.id,
+      fileType: file?.type ?? "unknown",
+      fileUrl: urlData?.publicUrl ?? "unknown",
+      size: file?.size ?? 0,
+      filePath: data.fullPath,
+    });
+
+    toast("Upload Successful", {
+      description: "File successfully uploaded",
+    });
+
+    setFile(null);
     setIsUploading(false);
   };
+
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-[80vh]">
+        <Image src="/loading.gif" alt="loading" height={50} width={50} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-10">
