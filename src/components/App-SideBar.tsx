@@ -1,4 +1,4 @@
-import { HomeIcon, Settings, Upload, File } from "lucide-react";
+import { HomeIcon, Settings, Upload, File, Mail } from "lucide-react";
 
 import {
   Sidebar,
@@ -27,6 +27,11 @@ const items = [
     title: "Files",
     url: "/dashboard/files",
     icon: File,
+  },
+  {
+    title: "Mail",
+    url: "/dashboard/mail",
+    icon: Mail,
   },
 
   {

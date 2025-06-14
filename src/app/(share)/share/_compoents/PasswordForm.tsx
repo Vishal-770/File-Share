@@ -3,10 +3,12 @@
 import { useState } from "react";
 import FilePreview from "./FilePreview";
 import FileDetails from "@/types/FileType";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+
 import { ShieldCheck, Lock, AlertCircle } from "lucide-react";
 
 const PasswordForm = ({ file }: { file: FileDetails }) => {
@@ -27,23 +29,26 @@ const PasswordForm = ({ file }: { file: FileDetails }) => {
   if (unlocked) return <FilePreview file={file} />;
 
   return (
-    <Card className="max-w-md w-full mx-auto shadow-lg border rounded-2xl">
-      <CardHeader className="text-center space-y-2">
+    <Card className="max-w-md w-full mx-auto rounded-2xl border bg-background shadow-xl">
+      <CardHeader className="text-center space-y-2 pb-0">
         <div className="flex justify-center">
-          <Lock className="w-6 h-6 text-blue-600" />
+          <Lock className="w-6 h-6 text-primary" />
         </div>
-        <CardTitle className="text-2xl font-bold text-gray-800">
+        <CardTitle className="text-2xl font-bold text-foreground">
           Secure File Access
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          This file is protected. Enter the password to unlock the preview.
+          This file is protected. Enter the password to continue.
         </p>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pt-4">
         {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
+          <Alert
+            variant="destructive"
+            className="flex items-start gap-2 text-sm"
+          >
+            <AlertCircle className="h-4 w-4 mt-[2px]" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -54,6 +59,7 @@ const PasswordForm = ({ file }: { file: FileDetails }) => {
             placeholder="Enter file password"
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            className="bg-muted/30 focus-visible:ring-1 focus-visible:ring-ring"
             required
           />
           <Button type="submit" className="w-full">
@@ -61,9 +67,9 @@ const PasswordForm = ({ file }: { file: FileDetails }) => {
           </Button>
         </form>
 
-        <div className="flex items-center justify-center text-xs text-muted-foreground gap-1 pt-1">
+        <div className="flex items-center justify-center text-xs text-muted-foreground gap-1 pt-2">
           <ShieldCheck className="h-4 w-4" />
-          <span>This file is securely protected</span>
+          <span>This file is encrypted and secure</span>
         </div>
       </CardContent>
     </Card>

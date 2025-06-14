@@ -74,3 +74,30 @@ export const UpdatePassword = async (data: PasswordBody) => {
     }
   }
 };
+
+
+
+interface SendEmailProps {
+  recipientEmail: string;
+  senderName: string;
+  shareUrls: string[];
+}
+
+export const SendEmail = async ({
+  recipientEmail,
+  senderName,
+  shareUrls,
+}: SendEmailProps) => {
+  try {
+    const response = await axios.post("/api/sendemail", {
+      recipientEmail,
+      senderName,
+      shareUrls,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Failed to send email:", error);
+    throw error;
+  }
+};
