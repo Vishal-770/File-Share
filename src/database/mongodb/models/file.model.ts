@@ -8,6 +8,7 @@ export interface IFile extends Document {
   size: number;
   fileType: string;
   clerkId: string;
+  fileId: string;
   password?: string;
 }
 
@@ -39,6 +40,10 @@ const fileSchema: Schema<IFile> = new Schema<IFile>(
       required: false,
     },
     filePath: {
+      type: String,
+      required: true,
+    },
+    fileId: {
       type: String,
       required: true,
     },

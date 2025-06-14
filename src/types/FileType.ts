@@ -7,6 +7,7 @@ export default interface FileDetails {
   fileUrl: string;
   filePath: string;
   password?: string;
+  fileId: string;
 }
 export interface PasswordBody {
   password: string;

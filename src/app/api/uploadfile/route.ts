@@ -1,7 +1,7 @@
-
 import dbConnect from "@/database/mongodb/dbConnect";
 import FileModel, { IFile } from "@/database/mongodb/models/file.model";
 import { NextRequest, NextResponse } from "next/server";
+import { nanoid } from "nanoid";
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
         }
       );
     }
+    const fileId = nanoid(10);
     const newFile = new FileModel({
       fileName,
       fileType,
@@ -26,6 +27,7 @@ export async function POST(req: NextRequest) {
       size,
       clerkId,
       filePath,
+      fileId,
     });
     await newFile.save();
     return NextResponse.json(
