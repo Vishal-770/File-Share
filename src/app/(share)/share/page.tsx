@@ -3,10 +3,9 @@ import React from "react";
 const SharePage = async ({
   searchParams,
 }: {
-  searchParams: { slug?: string };
+  searchParams: Promise<{ slug?: string }>;
 }) => {
-  const slug = searchParams?.slug;
-  if (!slug) return <h1>No Slug</h1>;
+  const { slug } = await searchParams;
   return <div>Hello:{slug}</div>;
 };
 
