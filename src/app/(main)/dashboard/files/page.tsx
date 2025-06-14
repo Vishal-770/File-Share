@@ -226,7 +226,7 @@ const FileTablePage = () => {
                         </DialogHeader>
                         <div className="flex items-center space-x-2">
                           <Input
-                            value={`${process.env.NEXT_PUBLIC_BASE_URL}/share?slug=${file.fileId}`}
+                            value={`${process.env.NEXT_PUBLIC_BASE_URL}/share?fileId=${file.fileId}`}
                             readOnly
                             className="w-full"
                             id={`share-link-${file._id}`}
@@ -234,7 +234,7 @@ const FileTablePage = () => {
                           <Button
                             type="button"
                             onClick={() => {
-                              const url = `${process.env.NEXT_PUBLIC_BASE_URL}/share?slug=${file.fileId}`;
+                              const url = `${process.env.NEXT_PUBLIC_BASE_URL}/share?fileId=${file.fileId}`;
                               navigator.clipboard.writeText(url);
                               toast.success("Link copied to clipboard!");
                             }}
