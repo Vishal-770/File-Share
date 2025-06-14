@@ -1,3 +1,4 @@
+import { PasswordBody } from "@/types/FileType";
 import axios from "axios";
 export interface FileDetails {
   fileName: string;
@@ -15,8 +16,7 @@ const api = axios.create({
 
 export const UploadFileDetails = async (data: FileDetails) => {
   try {
-    const req = await api.post("/api/uploadfile", data);
-    console.log(req);
+    await api.post("/api/uploadfile", data);
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.log("Error Uploading File Data to MongoDb");
@@ -40,8 +40,7 @@ export const getFileDetails = async (clerkId: string) => {
 
 export const DeleteFileDetails = async (id: string) => {
   try {
-    const res = await api.delete(`/api/deletefile?id=${id}`);
-    console.log(res);
+    await api.delete(`/api/deletefile?id=${id}`);
   } catch (err) {
     if (err instanceof Error) {
       console.log("Error while Deleting File Details", err.message);
@@ -58,11 +57,20 @@ export const UpdateFileName = async (
   data: UpdateFileNameData
 ): Promise<void> => {
   try {
-    const res = await api.patch("/api/rename", data);
-    console.log(res);
+    await api.patch("/api/rename", data);
   } catch (err) {
     if (err instanceof Error) {
       console.log(err);
+    }
+  }
+};
+export const UpdatePassword = async (data: PasswordBody) => {
+  try {
+    const res = await api.patch("/api/password", data);
+    console.log(res);
+  } catch (err) {
+    if (err instanceof Error) {
+      console.log(err.message);
     }
   }
 };

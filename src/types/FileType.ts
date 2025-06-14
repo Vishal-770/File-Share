@@ -6,4 +6,9 @@ export default interface FileDetails {
   createdAt: string;
   fileUrl: string;
   filePath: string;
+  password?: string;
+}
+export interface PasswordBody {
+  password: string;
+  fileUrl: string;
 }

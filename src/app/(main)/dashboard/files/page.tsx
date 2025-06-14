@@ -14,9 +14,10 @@ import {
   DeleteFileDetails,
   getFileDetails,
   UpdateFileName,
+  UpdatePassword,
 } from "@/services/service";
 import { format } from "date-fns";
-import { Download, Eye, Trash2, Pencil } from "lucide-react";
+import { Download, Eye, Trash2, Pencil, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { toast } from "sonner";
@@ -28,7 +29,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import React, { useState } from "react";
-import FileDetails from "@/types/FileType";
+import FileDetails, { PasswordBody } from "@/types/FileType";
 import { handleDownload } from "@/utils/functions";
 import { Input } from "@/components/ui/input";
 
@@ -40,6 +41,8 @@ const FileTablePage = () => {
   const [selectedFileUrl, setSelectedFileUrl] = useState<string | null>(null);
   const [renameFileId, setRenameFileId] = useState<string | null>(null);
   const [newFileName, setNewFileName] = useState<string>("");
+  const [password, setPassword] = useState<string | null>(null);
+  const [passwordFileUrl, setPasswordFileUrl] = useState<string | null>(null);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["files", clerkId],
@@ -79,6 +82,25 @@ const FileTablePage = () => {
       });
     },
   });
+
+  const passwordMutation = useMutation({
+    mutationFn: UpdatePassword,
+    onSuccess: () => {
+      toast.success("Password updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["files", clerkId] });
+      setPassword(null);
+      setPasswordFileUrl(null);
+    },
+    onError: (err) => {
+      toast.error("Password update failed", {
+        description: (err as Error).message || "Something went wrong",
+      });
+    },
+  });
+
+  const handleUpdatePassword = (data: PasswordBody) => {
+    passwordMutation.mutate(data);
+  };
 
   const handleDelete = () => {
     if (selectedFileUrl) {
@@ -127,6 +149,7 @@ const FileTablePage = () => {
                 <TableHead>Type</TableHead>
                 <TableHead>Size</TableHead>
                 <TableHead>Uploaded At</TableHead>
+                <TableHead>Password</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -141,6 +164,7 @@ const FileTablePage = () => {
                   <TableCell>
                     {format(new Date(file.createdAt), "dd MMM yyyy HH:mm")}
                   </TableCell>
+                  <TableCell>{file?.password ?? "No Password Set"}</TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button
                       variant="outline"
@@ -170,6 +194,16 @@ const FileTablePage = () => {
                       }}
                     >
                       <Pencil className="w-4 h-4 mr-1" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setPassword(""); // Clear old value
+                        setPasswordFileUrl(file.fileUrl);
+                      }}
+                    >
+                      <Lock className="w-4 h-4 mr-1" />
                     </Button>
                     <Button
                       variant="destructive"
@@ -203,7 +237,11 @@ const FileTablePage = () => {
             <Button variant="outline" onClick={() => setSelectedFileUrl(null)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete}>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+            >
               Delete
             </Button>
           </div>
@@ -235,6 +273,47 @@ const FileTablePage = () => {
                 disabled={renameMutation.isPending || !newFileName.trim()}
               >
                 {renameMutation.isPending ? "Renaming..." : "Rename"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Change Dialog */}
+      <Dialog
+        open={!!passwordFileUrl}
+        onOpenChange={() => setPasswordFileUrl(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Set Password</DialogTitle>
+            <DialogDescription>Enter password for this file</DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 space-y-2">
+            <Input
+              value={password || ""}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter password"
+              type="password"
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setPasswordFileUrl(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="default"
+                onClick={() =>
+                  handleUpdatePassword({
+                    fileUrl: passwordFileUrl!,
+                    password: password!,
+                  })
+                }
+                disabled={passwordMutation.isPending || !password?.trim()}
+              >
+                {passwordMutation.isPending ? "Updating..." : "Update Password"}
               </Button>
             </div>
           </div>
