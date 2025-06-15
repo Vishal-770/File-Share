@@ -8,25 +8,79 @@ import { toast } from "sonner";
 import { supabase } from "@/database/supabase/supabase";
 import React, { useState } from "react";
 import { useUser } from "@clerk/nextjs";
-import { UploadFileDetails } from "@/services/service";
+import { FetchUser, UploadFileDetails } from "@/services/service";
 import Image from "next/image";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const Dashboard = () => {
   const [file, setFile] = useState<File | null>(null);
-  const [errmsg, setErrmsg] = useState(false);
+  const [errmsg, setErrmsg] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const { user, isLoaded } = useUser();
+  const queryClient = useQueryClient();
+  const { user, isLoaded, isSignedIn } = useUser();
   const clerkId = user?.id;
 
+  const {
+    data: userData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["user"],
+    queryFn: () => FetchUser(user!.id),
+    enabled: isLoaded && isSignedIn,
+  });
+
   const UploadFile = (file: File) => {
-    if (file && file.size > 2_097_152) {
-      setErrmsg(true);
-      setFile(null);
-    } else {
-      setErrmsg(false);
-      setFile(file);
+    if (
+      !userData?.user?.max_file_upload_size ||
+      !userData?.user?.max_storage_size ||
+      !userData?.user?.current_storage_size
+    ) {
+      setErrmsg("Unable to fetch user storage info");
+      return;
     }
+
+    const maxFileSize = userData.user.max_file_upload_size;
+    const maxStorageSize = userData.user.max_storage_size;
+    const currentStorage = userData.user.current_storage_size;
+
+    // File too large by itself
+    if (file.size > maxFileSize) {
+      setErrmsg(
+        `File too large! Max allowed size is ${(
+          maxFileSize /
+          1024 /
+          1024
+        ).toFixed(
+          2
+        )} MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)} MB.`
+      );
+      setFile(null);
+      return;
+    }
+
+    // Uploading this file will exceed total storage
+    if (currentStorage + file.size > maxStorageSize) {
+      const available = (
+        (maxStorageSize - currentStorage) /
+        1024 /
+        1024
+      ).toFixed(2);
+      setErrmsg(
+        `Cannot upload. You only have ${available} MB left. This file is ${(
+          file.size /
+          1024 /
+          1024
+        ).toFixed(2)} MB.`
+      );
+      setFile(null);
+      return;
+    }
+
+    // All good
+    setErrmsg("");
+    setFile(file);
   };
 
   const UploadButtonClicked = async () => {
@@ -61,7 +115,6 @@ const Dashboard = () => {
     const { data: urlData } = supabase.storage
       .from("uploads")
       .getPublicUrl(filePath);
-    console.log(filePath);
 
     await UploadFileDetails({
       clerkId,
@@ -71,16 +124,26 @@ const Dashboard = () => {
       size: file?.size ?? 0,
       filePath,
     });
-    console.log(data.fullPath);
+
     toast("Upload Successful", {
       description: "File successfully uploaded",
     });
+
+    queryClient.invalidateQueries({ queryKey: ["user"] });
 
     setFile(null);
     setIsUploading(false);
   };
 
-  if (!isLoaded) {
+  if (error) {
+    return (
+      <div>
+        <h1>Some Error Occurred. Please try again later.</h1>
+      </div>
+    );
+  }
+
+  if (!isLoaded || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
         <Image src="/loading.gif" alt="loading" height={50} width={50} />
@@ -88,38 +151,70 @@ const Dashboard = () => {
     );
   }
 
-  return (
-    <div className="flex flex-col gap-10">
-      <h2 className="font-bold text-center text-3xl mt-10">
-        Start <strong>Uploading File and Share It</strong>
-      </h2>
+  const { current_storage_size, max_storage_size } = userData.user;
+  const usagePercent = Math.min(
+    (current_storage_size / max_storage_size) * 100,
+    100
+  );
 
-      <div className="mx-5 xl:mx-40">
+  return (
+    <div className="relative flex flex-col gap-6 px-4 py-6 max-w-4xl mx-auto">
+      {/* Header and Storage in responsive layout */}
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+        <h2 className="font-semibold text-2xl text-center lg:text-left">
+          Start <strong className="text-primary">Uploading</strong> and Sharing
+          Files
+        </h2>
+
+        {/* Storage Indicator */}
+        <div className="w-full lg:w-64 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4 rounded-lg border shadow-sm">
+          <div className="flex flex-col gap-2">
+            <div className="flex justify-between text-sm mb-1">
+              <span className="text-muted-foreground">
+                {(current_storage_size / 1024 / 1024).toFixed(3)} MB used
+              </span>
+              <span className="font-medium">{usagePercent.toFixed(2)}%</span>
+            </div>
+            <Progress value={usagePercent} className="h-2" />
+            <p className="text-xs text-muted-foreground mt-1 text-center lg:text-right">
+              {(max_storage_size / 1024 / 1024).toFixed(3)} MB total available
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Upload section */}
+      <div className="w-full">
         <FileUpload setFile={UploadFile} />
       </div>
 
       {errmsg && (
-        <p className="text-center text-red-500 font-medium">
-          File too large! Max size is 2MB.
-        </p>
+        <div className="w-full flex justify-center">
+          <p className="text-red-500 font-medium bg-red-50 px-4 py-2 rounded-md max-w-md text-center">
+            {errmsg}
+          </p>
+        </div>
       )}
 
       {file && <FilePreview file={file} setfile={setFile} />}
 
       {isUploading && (
-        <div className="mx-5 xl:mx-40">
+        <div className="w-full max-w-md mx-auto space-y-2">
           <Progress value={progress} />
-          <p className="text-center mt-2 text-muted-foreground">Uploading...</p>
+          <p className="text-center text-sm text-muted-foreground">
+            Uploading your file...
+          </p>
         </div>
       )}
 
-      <div className="flex items-center justify-center">
+      <div className="flex justify-center pt-2">
         <Button
           onClick={UploadButtonClicked}
           disabled={!file || isUploading}
-          className="w-40 h-12"
+          size="lg"
+          className="w-full max-w-xs"
         >
-          {isUploading ? "Uploading..." : "Upload"}
+          {isUploading ? "Uploading..." : "Upload File"}
         </Button>
       </div>
     </div>

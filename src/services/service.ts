@@ -75,8 +75,6 @@ export const UpdatePassword = async (data: PasswordBody) => {
   }
 };
 
-
-
 interface SendEmailProps {
   recipientEmail: string;
   senderName: string;
@@ -99,5 +97,14 @@ export const SendEmail = async ({
   } catch (error) {
     console.error("Failed to send email:", error);
     throw error;
+  }
+};
+
+export const FetchUser = async (clerkId: string) => {
+  try {
+    const response = await api.get(`/api/fetchuser?id=${clerkId}`);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error fetching user:", error);
   }
 };

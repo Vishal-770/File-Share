@@ -1,6 +1,6 @@
-
 import dbConnect from "@/database/mongodb/dbConnect";
 import FileModel from "@/database/mongodb/models/file.model";
+import User from "@/database/mongodb/models/user.model";
 import { supabase } from "@/database/supabase/supabase";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -26,7 +26,12 @@ export async function DELETE(req: NextRequest) {
         { status: 404 }
       );
     }
-
+    const clerkId = deletedFile.clerkId;
+    const UserDetails = await User.findOne({ clerkId });
+    if (UserDetails && typeof UserDetails.current_storage_size === "number") {
+      UserDetails.current_storage_size -= deletedFile.size;
+      await UserDetails.save();
+    }
     const filePath = deletedFile.filePath;
     console.log("Deleting file from Supabase:", filePath);
 

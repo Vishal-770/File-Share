@@ -2,6 +2,7 @@ import dbConnect from "@/database/mongodb/dbConnect";
 import FileModel, { IFile } from "@/database/mongodb/models/file.model";
 import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
+import User from "@/database/mongodb/models/user.model";
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,6 +31,12 @@ export async function POST(req: NextRequest) {
       fileId,
     });
     await newFile.save();
+    const UserDetails = await User.findOne({ clerkId });
+    if (UserDetails && typeof UserDetails.current_storage_size === "number") {
+      UserDetails.current_storage_size += size;
+      await UserDetails.save();
+    }
+    
     return NextResponse.json(
       {
         message: "File Details Saved Successfully",
