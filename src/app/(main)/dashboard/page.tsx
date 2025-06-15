@@ -32,60 +32,31 @@ const Dashboard = () => {
   });
 
   const UploadFile = (file: File) => {
-    if (
-      !userData?.user?.max_file_upload_size ||
-      !userData?.user?.max_storage_size ||
-      !userData?.user?.current_storage_size
-    ) {
-      setErrmsg("Unable to fetch user storage info");
-      return;
-    }
+    if (!userData?.user?.max_file_upload_size) return;
 
-    const maxFileSize = userData.user.max_file_upload_size;
-    const maxStorageSize = userData.user.max_storage_size;
-    const currentStorage = userData.user.current_storage_size;
-
-    // File too large by itself
-    if (file.size > maxFileSize) {
+    const maxSize = userData.user.max_file_upload_size;
+    if (file && file.size > maxSize) {
       setErrmsg(
-        `File too large! Max allowed size is ${(
-          maxFileSize /
-          1024 /
-          1024
-        ).toFixed(
+        `File too large! Max allowed size is ${(maxSize / 1024 / 1024).toFixed(
           2
         )} MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)} MB.`
       );
       setFile(null);
-      return;
+    } else {
+      setErrmsg("");
+      setFile(file);
     }
-
-    // Uploading this file will exceed total storage
-    if (currentStorage + file.size > maxStorageSize) {
-      const available = (
-        (maxStorageSize - currentStorage) /
-        1024 /
-        1024
-      ).toFixed(2);
-      setErrmsg(
-        `Cannot upload. You only have ${available} MB left. This file is ${(
-          file.size /
-          1024 /
-          1024
-        ).toFixed(2)} MB.`
-      );
-      setFile(null);
-      return;
-    }
-
-    // All good
-    setErrmsg("");
-    setFile(file);
   };
 
   const UploadButtonClicked = async () => {
     if (!file || !clerkId) {
       toast.error("User not authenticated or file not selected");
+      return;
+    }
+    if (
+      userData?.user?.current_storage_size > userData?.user.max_storage_size
+    ) {
+      toast.error("Storage Full");
       return;
     }
 
@@ -128,7 +99,6 @@ const Dashboard = () => {
     toast("Upload Successful", {
       description: "File successfully uploaded",
     });
-
     queryClient.invalidateQueries({ queryKey: ["user"] });
 
     setFile(null);
