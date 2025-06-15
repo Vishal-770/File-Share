@@ -27,6 +27,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { FileText, Loader2, Mail, Send } from "lucide-react";
+import { StickyBanner } from "@/components/ui/sticky-banner";
 
 interface Data {
   email: string;
@@ -91,6 +92,12 @@ const Page = () => {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      <StickyBanner className="bg-foreground">
+        <p className="mx-0 max-w-[90%] text-background drop-shadow-md">
+          Email functionality is currently unavailable as I don&#39;t have a domain
+          connected to Resend for sending emails.
+        </p>
+      </StickyBanner>
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col gap-6">
           {/* Header */}

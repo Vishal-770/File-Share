@@ -12,6 +12,7 @@ import { useUser } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   DeleteFileDetails,
+  FetchUser,
   getFileDetails,
   UpdateFileName,
   UpdatePassword,
@@ -34,9 +35,10 @@ import { handleDownload } from "@/utils/functions";
 import { Input } from "@/components/ui/input";
 
 import { DialogTrigger } from "@radix-ui/react-dialog";
+import StorageBar from "../_components/StorageBar";
 
 const FileTablePage = () => {
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
   const clerkId = user?.id;
   const queryClient = useQueryClient();
 
@@ -51,12 +53,21 @@ const FileTablePage = () => {
     queryFn: () => getFileDetails(clerkId!),
     enabled: isLoaded && !!clerkId,
   });
-
+  const {
+    data: userData,
+    isLoading: isLoadingUser,
+    error: userError,
+  } = useQuery({
+    queryKey: ["user"],
+    queryFn: () => FetchUser(user!.id),
+    enabled: isLoaded && isSignedIn,
+  });
   const deleteMutation = useMutation({
     mutationFn: DeleteFileDetails,
     onSuccess: () => {
       toast.success("File deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["files", clerkId] });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
       setSelectedFileUrl(null);
     },
     onError: (err, fileUrl) => {
@@ -116,7 +127,7 @@ const FileTablePage = () => {
     }
   };
 
-  if (!isLoaded || isLoading) {
+  if (!isLoaded || isLoading || isLoadingUser) {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
         <Image src="/loading.gif" alt="loading" height={50} width={50} />
@@ -124,19 +135,28 @@ const FileTablePage = () => {
     );
   }
 
-  if (error) {
+  if (error || userError) {
     return (
       <div className="flex items-center justify-center min-h-[80vh] text-red-500 text-lg">
         Failed to fetch files. Please try again later.
       </div>
     );
   }
-
+  const { current_storage_size, max_storage_size } = userData.user;
+  const usagePercent = Math.min(
+    (current_storage_size / max_storage_size) * 100,
+    100
+  );
   return (
     <div className="p-4 sm:p-6">
-      <h2 className="text-xl sm:text-2xl font-bold mb-4">
-        Your Uploaded Files
-      </h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+        <h2 className="text-xl sm:text-2xl font-bold">Your Uploaded Files</h2>
+        <StorageBar
+          current_storage_size={current_storage_size}
+          usagePercent={usagePercent}
+          max_storage_size={max_storage_size}
+        />
+      </div>
 
       {data?.files?.length === 0 ? (
         <div className="text-center text-muted-foreground mt-10 text-base sm:text-lg">
@@ -282,7 +302,7 @@ const FileTablePage = () => {
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
             >
-              Delete
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
             </Button>
           </div>
         </DialogContent>

@@ -43,7 +43,7 @@ export function NavbarDemo() {
           <div className="flex items-center gap-4">
             <SignedOut>
               <NavbarButton className="p-0">
-                <SignInButton>
+                <SignInButton mode="modal">
                   <Button>SignIn</Button>
                 </SignInButton>
               </NavbarButton>
