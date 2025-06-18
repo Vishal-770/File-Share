@@ -1,4 +1,12 @@
-import { HomeIcon, Settings, Upload, File, Mail, Wallet } from "lucide-react";
+import {
+  HomeIcon,
+
+  Upload,
+  File,
+  Mail,
+  Wallet,
+  Users,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -40,9 +48,9 @@ const items = [
   },
 
   {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
+    title: "Teams",
+    url: "/dashboard/teams",
+    icon: Users,
   },
 ];
 

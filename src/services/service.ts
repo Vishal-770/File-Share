@@ -1,5 +1,11 @@
+export interface CreateTeam {
+  teamName: string;
+  teamDescription: string;
+  clerkId: string;
+}
 import { PasswordBody } from "@/types/FileType";
 import axios from "axios";
+
 export interface FileDetails {
   fileName: string;
   fileUrl: string;
@@ -9,6 +15,7 @@ export interface FileDetails {
   password?: string;
   filePath: string;
 }
+
 const BaseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 const api = axios.create({
   baseURL: BaseUrl,
@@ -106,5 +113,35 @@ export const FetchUser = async (clerkId: string) => {
     return response.data;
   } catch (error) {
     console.error("❌ Error fetching user:", error);
+  }
+};
+
+export const CreateTeam = async (data: CreateTeam) => {
+  try {
+    await api.post("/api/createteam", data);
+  } catch (err) {
+    console.error("Error:", err);
+  }
+};
+
+export const FetchTeams = async (teamIds: string[]) => {
+  try {
+    const response = await api.post("/api/fetchteams", { teamIds });
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error fetching teams:", error);
+    return null;
+  }
+};
+
+export const DeleteTeam = async (teamId: string) => {
+  try {
+    const res = await axios.delete(`/api/team`, {
+      params: { id: teamId },
+    });
+
+    console.log(res);
+  } catch (error) {
+    console.error(error);
   }
 };
