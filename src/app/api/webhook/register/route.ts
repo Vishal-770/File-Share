@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
           email: data?.email_addresses?.[0]?.email_address || "",
           first_name: data?.first_name,
           last_name: data?.last_name,
+          teams: [],
         });
 
         console.log("✅ User created in DB:", newUser._id);

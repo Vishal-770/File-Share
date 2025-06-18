@@ -10,6 +10,7 @@ export interface IUsers extends Document {
   max_email_limit: number;
   current_email_sent: number;
   subscription: string;
+  teams: mongoose.Types.ObjectId[];
 }
 
 const UserSchema: Schema<IUsers> = new Schema({
@@ -50,6 +51,7 @@ const UserSchema: Schema<IUsers> = new Schema({
     type: Number,
     default: 2_097_152,
   },
+  teams: [{ type: Schema.Types.ObjectId, ref: "Team" }],
 });
 const User =
   (mongoose.models.FileDropUser as mongoose.Model<IUsers>) ||
