@@ -139,10 +139,10 @@ const TeamPage = () => {
   return (
     <div className="min-h-screen px-6 py-8 max-w-6xl mx-auto">
       <header className="mb-10 text-center">
-        <h1 className="text-4xl font-extrabold mb-2 text-gray-900">
+        <h1 className="text-4xl font-extrabold mb-2 text-primary">
           Manage Your Files with Your Team
         </h1>
-        <p className="text-gray-600 max-w-xl mx-auto">
+        <p className="text-primary max-w-xl mx-auto">
           Collaborate, upload, and manage files efficiently within your teams.
         </p>
       </header>
@@ -240,11 +240,11 @@ const TeamPage = () => {
       </div>
 
       <section>
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+        <h2 className="text-2xl font-semibold mb-4 text-primary">
           Your Teams
         </h2>
         {teams.length === 0 ? (
-          <p className="text-gray-600">You’re not part of any teams yet.</p>
+          <p className="text-primary">You’re not part of any teams yet.</p>
         ) : (
           <Teams userId={user?.id ?? " "} teamIds={teams} />
         )}

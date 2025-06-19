@@ -171,3 +171,10 @@ export const LeaveTeam = async ({
     console.error("Error leaving team:", error);
   }
 };
+
+export const FetchTeam = async (teamId: string) => {
+  const res = await axios.get("/api/fetchteam", {
+    params: { teamId },
+  });
+  return res.data.team;
+};

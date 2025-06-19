@@ -1,5 +1,5 @@
 "use client";
-
+import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { DeleteTeam, FetchTeams, LeaveTeam } from "@/services/service";
 import React, { useState } from "react";
@@ -14,7 +14,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Users, Trash2, AlertTriangle, Loader2, LogOut, Copy, Check } from "lucide-react";
+import {
+  Users,
+  Trash2,
+  AlertTriangle,
+  Loader2,
+  LogOut,
+  Copy,
+  Check,
+  Eye,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface TeamLeader {
@@ -24,7 +33,7 @@ interface TeamLeader {
   clerkId: string;
 }
 
-interface Team {
+export interface Team {
   _id: string;
   teamName: string;
   teamDescription: string;
@@ -36,7 +45,7 @@ const Teams = ({ teamIds, userId }: { teamIds: string[]; userId: string }) => {
   const [openDialogId, setOpenDialogId] = useState<string | null>(null);
   const [leaveDialogId, setLeaveDialogId] = useState<string | null>(null);
   const [copiedTeamId, setCopiedTeamId] = useState<string | null>(null);
-
+  const router = useRouter();
   const { data, isLoading, isError, refetch } = useQuery<{ data: Team[] }>({
     queryKey: ["teams"],
     queryFn: () => FetchTeams(teamIds),
@@ -60,6 +69,7 @@ const Teams = ({ teamIds, userId }: { teamIds: string[]; userId: string }) => {
       toast.success("Left team successfully");
       setLeaveDialogId(null);
       refetch();
+      window.location.reload();
     },
     onError: () => {
       toast.error("Failed to leave team. Please try again.");
@@ -79,7 +89,10 @@ const Teams = ({ teamIds, userId }: { teamIds: string[]; userId: string }) => {
     return (
       <div className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 3 }).map((_, index) => (
-          <Card key={index} className="shadow-sm border rounded-lg p-4 space-y-4">
+          <Card
+            key={index}
+            className="shadow-sm border rounded-lg p-4 space-y-4"
+          >
             <Skeleton className="h-6 w-1/2 rounded" />
             <Skeleton className="h-4 w-1/3 rounded" />
             <Skeleton className="h-4 w-full rounded mt-2" />
@@ -110,7 +123,9 @@ const Teams = ({ teamIds, userId }: { teamIds: string[]; userId: string }) => {
     return (
       <div className="flex flex-col items-center justify-center p-10 text-center">
         <Users className="w-10 h-10 text-muted-foreground mb-3" />
-        <p className="text-muted-foreground">You&#39;re not part of any teams yet</p>
+        <p className="text-muted-foreground">
+          You&#39;re not part of any teams yet
+        </p>
       </div>
     );
   }
@@ -122,7 +137,10 @@ const Teams = ({ teamIds, userId }: { teamIds: string[]; userId: string }) => {
         const isTeamIdCopied = copiedTeamId === team.teamId;
 
         return (
-          <Card key={team._id} className="shadow-sm border rounded-lg hover:shadow-md transition-shadow">
+          <Card
+            key={team._id}
+            className="shadow-sm border rounded-lg hover:shadow-md transition-shadow"
+          >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
                 <Users className="w-5 h-5 text-primary" />
@@ -171,6 +189,15 @@ const Teams = ({ teamIds, userId }: { teamIds: string[]; userId: string }) => {
                     No Team Leader Assigned
                   </p>
                 )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full flex items-center justify-center gap-2"
+                  onClick={() => router.push(`/dashboard/teams/${team.teamId}`)}
+                >
+                  <Eye className="w-4 h-4" />
+                  View Details
+                </Button>
 
                 <div className="flex flex-col gap-2 mt-4">
                   {isLeader ? (
@@ -197,7 +224,11 @@ const Teams = ({ teamIds, userId }: { teamIds: string[]; userId: string }) => {
                             Delete Team
                           </DialogTitle>
                           <DialogDescription className="pt-2">
-                            This will permanently delete <span className="font-semibold">{team.teamName}</span> and all its data. This action cannot be undone.
+                            This will permanently delete{" "}
+                            <span className="font-semibold">
+                              {team.teamName}
+                            </span>{" "}
+                            and all its data. This action cannot be undone.
                           </DialogDescription>
                         </DialogHeader>
                         <div className="flex justify-end gap-3 mt-4">
@@ -230,11 +261,7 @@ const Teams = ({ teamIds, userId }: { teamIds: string[]; userId: string }) => {
                       }
                     >
                       <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                        >
+                        <Button variant="outline" size="sm" className="w-full">
                           <LogOut className="w-4 h-4 mr-2" />
                           Leave Team
                         </Button>
@@ -246,7 +273,12 @@ const Teams = ({ teamIds, userId }: { teamIds: string[]; userId: string }) => {
                             Leave Team
                           </DialogTitle>
                           <DialogDescription className="pt-2">
-                            You&#39;re about to leave <span className="font-semibold">{team.teamName}</span>. You won&#39;t be able to access team files unless you&#39;re re-invited.
+                            You&#39;re about to leave{" "}
+                            <span className="font-semibold">
+                              {team.teamName}
+                            </span>
+                            . You won&#39;t be able to access team files unless
+                            you&#39;re re-invited.
                           </DialogDescription>
                         </DialogHeader>
                         <div className="flex justify-end gap-3 mt-4">
@@ -259,7 +291,10 @@ const Teams = ({ teamIds, userId }: { teamIds: string[]; userId: string }) => {
                           <Button
                             variant="destructive"
                             onClick={() =>
-                              leaveTeam({ teamId: team.teamId, clerkId: userId })
+                              leaveTeam({
+                                teamId: team.teamId,
+                                clerkId: userId,
+                              })
                             }
                             disabled={isLeaving}
                           >
@@ -285,5 +320,3 @@ const Teams = ({ teamIds, userId }: { teamIds: string[]; userId: string }) => {
 };
 
 export default Teams;
-
-
