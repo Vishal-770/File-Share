@@ -1,6 +1,8 @@
 import dbConnect from "@/database/mongodb/dbConnect";
 import Team from "@/database/mongodb/models/team.model";
+import User from "@/database/mongodb/models/user.model";
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 
 export async function DELETE(req: NextRequest) {
   try {
@@ -9,14 +11,15 @@ export async function DELETE(req: NextRequest) {
     const url = new URL(req.url);
     const teamId = url.searchParams.get("id");
 
-    if (!teamId) {
+    if (!teamId || !mongoose.Types.ObjectId.isValid(teamId)) {
       return NextResponse.json(
-        { message: "Missing teamId", success: false },
+        { message: "Invalid or missing team ID", success: false },
         { status: 400 }
       );
     }
 
-    const deletedTeam = await Team.findOneAndDelete({ teamId });
+    // Delete the team and get its _id
+    const deletedTeam = await Team.findByIdAndDelete(teamId);
 
     if (!deletedTeam) {
       return NextResponse.json(
@@ -25,9 +28,14 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
+    await User.updateMany(
+      { teams: deletedTeam._id },
+      { $pull: { teams: deletedTeam._id } }
+    );
+
     return NextResponse.json(
       {
-        message: "Team deleted successfully",
+        message: "Team deleted and removed from all users",
         success: true,
         data: deletedTeam,
       },

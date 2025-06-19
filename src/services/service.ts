@@ -136,7 +136,7 @@ export const FetchTeams = async (teamIds: string[]) => {
 
 export const DeleteTeam = async (teamId: string) => {
   try {
-    const res = await axios.delete(`/api/team`, {
+    const res = await axios.delete(`/api/deleteteam`, {
       params: { id: teamId },
     });
 
