@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { CreateTeam, FetchUser } from "@/services/service";
+import { CreateTeam, FetchUser, JoinTeam } from "@/services/service";
 import { useUser } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
@@ -27,14 +27,30 @@ interface TeamFormData {
   teamDescription: string;
 }
 
+interface JoinFormData {
+  teamId: string;
+}
+
 const TeamPage = () => {
   const { isLoaded, user, isSignedIn } = useUser();
   const { register, handleSubmit, reset } = useForm<TeamFormData>();
-  const [open, setOpen] = useState<boolean>(false);
+  const {
+    register: joinRegister,
+    handleSubmit: handleJoinSubmit,
+    reset: joinReset,
+  } = useForm<JoinFormData>();
+
+  const [open, setOpen] = useState(false);
+  const [joinOpen, setJoinOpen] = useState(false);
+
   const queryClient = useQueryClient();
 
   const CreateTeamMutation = useMutation({
     mutationFn: CreateTeam,
+  });
+
+  const JoinTeamMutation = useMutation({
+    mutationFn: JoinTeam,
   });
 
   const {
@@ -47,7 +63,7 @@ const TeamPage = () => {
     enabled: isLoaded && isSignedIn,
   });
 
-  const onSubmit = async (data: TeamFormData) => {
+  const onSubmit = (data: TeamFormData) => {
     CreateTeamMutation.mutate(
       {
         teamName: data.teamName,
@@ -56,9 +72,8 @@ const TeamPage = () => {
       },
       {
         onSuccess: () => {
-          toast.success("Team created successfully");
+          toast.success("✅ Team created successfully");
           queryClient.invalidateQueries({ queryKey: ["user"] });
-          queryClient.invalidateQueries({ queryKey: ["teams"] });
           refetch();
           reset();
           setOpen(false);
@@ -66,6 +81,47 @@ const TeamPage = () => {
         },
         onError: (err) => {
           toast.error(`❌ Error creating team: ${err.message}`);
+        },
+      }
+    );
+  };
+
+  const onJoinSubmit = (data: JoinFormData) => {
+    JoinTeamMutation.mutate(
+      {
+        teamId: data.teamId,
+        clerkId: user?.id ?? "",
+      },
+      {
+        onSuccess: () => {
+          toast.success("Joined team successfully");
+          queryClient.invalidateQueries({ queryKey: ["user"] });
+          refetch();
+          joinReset();
+          setJoinOpen(false);
+        },
+        onError: (err: unknown) => {
+          let errorMessage = "An error occurred while joining the team.";
+          type ErrorResponse = {
+            response?: {
+              data?: {
+                message?: string;
+              };
+            };
+          };
+          const errorObj = err as ErrorResponse;
+          if (
+            errorObj &&
+            typeof errorObj === "object" &&
+            errorObj.response &&
+            typeof errorObj.response === "object" &&
+            errorObj.response.data &&
+            typeof errorObj.response.data === "object" &&
+            errorObj.response.data.message
+          ) {
+            errorMessage = `Failed to join team: ${errorObj.response.data.message}`;
+          }
+          toast.error(errorMessage);
         },
       }
     );
@@ -91,7 +147,8 @@ const TeamPage = () => {
         </p>
       </header>
 
-      <div className="flex justify-end mb-6">
+      <div className="flex justify-end gap-4 mb-6">
+        {/* Create Team Dialog */}
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button>Create New Team</Button>
@@ -102,7 +159,7 @@ const TeamPage = () => {
               <DialogHeader>
                 <DialogTitle>Create a New Team</DialogTitle>
                 <DialogDescription>
-                  Give your team a name and a short description.
+                  Provide a name and description for your new team.
                 </DialogDescription>
               </DialogHeader>
 
@@ -113,7 +170,7 @@ const TeamPage = () => {
                     id="teamName"
                     {...register("teamName")}
                     required
-                    placeholder="e.g. Product Squad"
+                    placeholder="e.g. Dev Squad"
                   />
                 </div>
                 <div className="grid gap-2">
@@ -122,17 +179,59 @@ const TeamPage = () => {
                     id="teamDescription"
                     {...register("teamDescription")}
                     required
-                    placeholder="What does your team do?"
+                    placeholder="e.g. Backend development team"
                   />
                 </div>
               </div>
 
-              <DialogFooter className="mt-2">
+              <DialogFooter>
                 <DialogClose asChild>
                   <Button variant="outline">Cancel</Button>
                 </DialogClose>
-                <Button disabled={CreateTeamMutation.isPending} type="submit">
+                <Button type="submit" disabled={CreateTeamMutation.isPending}>
                   {CreateTeamMutation.isPending ? "Creating..." : "Create Team"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Join Team Dialog */}
+        <Dialog open={joinOpen} onOpenChange={setJoinOpen}>
+          <DialogTrigger asChild>
+            <Button variant="secondary">Join Team</Button>
+          </DialogTrigger>
+
+          <DialogContent className="sm:max-w-[500px]">
+            <form
+              onSubmit={handleJoinSubmit(onJoinSubmit)}
+              className="space-y-6"
+            >
+              <DialogHeader>
+                <DialogTitle>Join a Team</DialogTitle>
+                <DialogDescription>
+                  Enter a valid Team ID to join an existing team.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="teamId">Team ID</Label>
+                  <Input
+                    id="teamId"
+                    {...joinRegister("teamId")}
+                    required
+                    placeholder="e.g. abcd1234"
+                  />
+                </div>
+              </div>
+
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button type="submit" disabled={JoinTeamMutation.isPending}>
+                  {JoinTeamMutation.isPending ? "Joining..." : "Join Team"}
                 </Button>
               </DialogFooter>
             </form>
@@ -147,7 +246,7 @@ const TeamPage = () => {
         {teams.length === 0 ? (
           <p className="text-gray-600">You’re not part of any teams yet.</p>
         ) : (
-          <Teams teamIds={teams} />
+          <Teams userId={user?.id ?? " "} teamIds={teams} />
         )}
       </section>
     </div>

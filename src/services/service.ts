@@ -145,3 +145,29 @@ export const DeleteTeam = async (teamId: string) => {
     console.error(error);
   }
 };
+export const JoinTeam = async ({
+  teamId,
+  clerkId,
+}: {
+  teamId: string;
+  clerkId: string;
+}) => {
+  const res = await axios.patch("/api/jointeam", { teamId, clerkId });
+  return res.data;
+};
+
+export const LeaveTeam = async ({
+  teamId,
+  clerkId,
+}: {
+  teamId: string;
+  clerkId: string;
+}) => {
+  try {
+    const res = await axios.patch("/api/leaveteam", { teamId, clerkId });
+    console.log(res);
+    return res.data;
+  } catch (error) {
+    console.error("Error leaving team:", error);
+  }
+};
