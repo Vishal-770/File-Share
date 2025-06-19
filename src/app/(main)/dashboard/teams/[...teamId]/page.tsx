@@ -27,6 +27,7 @@ const TeamDetail = () => {
     enabled: !!teamId,
   });
 
+  // ✅ Show loading screen
   if (!isLoaded || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[80vh]">
@@ -34,6 +35,8 @@ const TeamDetail = () => {
       </div>
     );
   }
+
+  // ✅ Check access AFTER loading is complete
   const isAccessDenied =
     user?.id !== data?.teamLeader.clerkId &&
     !data?.teamMembers.some((member: IUsers) => member.clerkId === user?.id);
@@ -57,6 +60,7 @@ const TeamDetail = () => {
       </div>
     );
   }
+
   return (
     <div className="flex flex-col md:flex-row h-screen">
       {/* Top bar for mobile */}
