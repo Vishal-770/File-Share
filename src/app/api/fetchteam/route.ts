@@ -16,7 +16,8 @@ export async function GET(req: NextRequest) {
     await dbConnect();
     const team = await Team.findOne({ teamId })
       .populate("teamLeader")
-      .populate("teamMembers");
+      .populate("teamMembers")
+      .populate("files");
     if (!team) {
       return NextResponse.json(
         { message: "Team not found with provided teamId.", success: false },

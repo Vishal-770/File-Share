@@ -178,3 +178,19 @@ export const FetchTeam = async (teamId: string) => {
   });
   return res.data.team;
 };
+
+export const UploadFilesToTeam = async ({
+  teamId,
+  fileIds,
+}: {
+  teamId: string;
+  fileIds: string[];
+}) => {
+  try {
+    const res = await axios.post("/api/uploadfileteam", { teamId, fileIds });
+    return res.data;
+  } catch (error) {
+    console.error("Error uploading file to team:", error);
+    throw error;
+  }
+};

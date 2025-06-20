@@ -2,52 +2,44 @@ import dbConnect from "@/database/mongodb/dbConnect";
 import FileModel from "@/database/mongodb/models/file.model";
 import Team from "@/database/mongodb/models/team.model";
 import { NextRequest, NextResponse } from "next/server";
-import { Types } from "mongoose";
 
 export async function POST(req: NextRequest) {
   try {
     await dbConnect();
 
     const body = await req.json();
-    const { teamId, fileId } = body;
+    const { teamId, fileIds } = body;
 
-    if (!teamId || !fileId) {
+    if (!teamId || !Array.isArray(fileIds) || fileIds.length === 0) {
       return NextResponse.json(
-        { message: "teamId and fileId are required.", success: false },
+        { message: "teamId and fileIds are required.", success: false },
         { status: 400 }
       );
     }
+    const files = await FileModel.find({ fileId: { $in: fileIds } });
 
-    const team = await Team.findOne({ teamId });
-    if (!team) {
+    if (files.length === 0) {
       return NextResponse.json(
-        { message: "Team not found.", success: false },
+        { message: "No matching files found.", success: false },
         { status: 404 }
       );
     }
-
-    const file = await FileModel.findOne({ fileId });
-    if (!file) {
-      return NextResponse.json(
-        { message: "File not found with provided fileId.", success: false },
-        { status: 404 }
-      );
-    }
-    type MongoId = Types.ObjectId;
-    const fileMongoId: MongoId = file._id as Types.ObjectId;
-
-    if (team.files.includes(fileMongoId)) {
-      return NextResponse.json(
-        { message: "File already exists in the team.", success: false },
-        { status: 400 }
-      );
-    }
-
-    team.files.push(fileMongoId);
-    await team.save();
+    const fileObjectIds = files.map((file) => file._id);
+    const result = await Team.updateOne(
+      { teamId },
+      {
+        $addToSet: {
+          files: { $each: fileObjectIds },
+        },
+      }
+    );
 
     return NextResponse.json(
-      { message: "File added to team successfully.", success: true },
+      {
+        message: `${fileObjectIds.length} file(s) processed.`,
+        modifiedCount: result.modifiedCount,
+        success: true,
+      },
       { status: 200 }
     );
   } catch (err) {
@@ -57,6 +49,7 @@ export async function POST(req: NextRequest) {
         { status: 500 }
       );
     }
+
     return NextResponse.json(
       { message: "An unknown error occurred.", success: false },
       { status: 500 }

@@ -1,7 +1,7 @@
 import dbConnect from "@/database/mongodb/dbConnect";
 import Team from "@/database/mongodb/models/team.model";
 import { NextRequest, NextResponse } from "next/server";
-
+import "@/database/mongodb/models/file.model";
 export async function POST(req: NextRequest) {
   try {
     await dbConnect();
