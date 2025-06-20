@@ -3,13 +3,13 @@ import { Button } from "./ui/button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import {
-  Upload,
   Folder,
   Lock,
-  Mail,
   Eye,
   RefreshCw,
   Shield,
+  Users,
+  GitBranch,
 } from "lucide-react";
 
 const HeroSection = () => {
@@ -22,20 +22,19 @@ const HeroSection = () => {
             variant="outline"
             className="px-4 py-1.5 rounded-full border-primary/30 bg-primary/10 text-primary font-medium text-sm hover:bg-primary/20"
           >
-            🚀 Next-Gen File Sharing Platform
+            🚀 Team File Sharing Platform
           </Badge>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground">
-            Secure, Smart & Simple{" "}
+            Collaborate Securely with{" "}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              File Management
+              Your Team
             </span>
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-            Enterprise-grade file sharing with advanced security, real-time
-            analytics, and seamless collaboration tools for teams and
-            individuals.
+            Enterprise-grade file sharing with team collaboration, advanced
+            security, and real-time updates for seamless teamwork.
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 pt-2">
@@ -65,7 +64,7 @@ const HeroSection = () => {
         </div>
       </div>
 
-      {/* Logo Cloud - You can add your trusted partners or tech stack here */}
+      {/* Logo Cloud */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <p className="text-center text-sm uppercase tracking-wider text-muted-foreground mb-6">
           Trusted by teams at
@@ -91,44 +90,58 @@ const HeroSection = () => {
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
               Powerful Features for{" "}
               <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                Secure Sharing
+                Teams
               </span>
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto">
-              Everything you need to share files securely and track their usage
+              Everything your team needs for secure file collaboration
             </p>
           </div>
 
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Feature 1 */}
+            {/* Team Workspaces */}
             <div className="bg-background p-8 rounded-xl shadow-sm border hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4 mb-5">
                 <div className="p-3 rounded-lg bg-primary/10 text-primary">
-                  <Upload className="w-6 h-6" />
+                  <Users className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-semibold">Drag & Drop Upload</h3>
+                <h3 className="text-xl font-semibold">Team Workspaces</h3>
               </div>
               <p className="text-muted-foreground">
-                Easily upload files of any type with our intuitive interface.
-                Supports bulk uploads and automatic organization.
+                Create shared spaces for your team with controlled access and
+                centralized file management.
               </p>
             </div>
 
-            {/* Feature 2 */}
+            {/* File Versioning */}
+            <div className="bg-background p-8 rounded-xl shadow-sm border hover:shadow-md transition-all duration-300">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="p-3 rounded-lg bg-primary/10 text-primary">
+                  <GitBranch className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-semibold">File Versioning</h3>
+              </div>
+              <p className="text-muted-foreground">
+                Track changes and revert to previous versions with our built-in
+                version history.
+              </p>
+            </div>
+
+            {/* Secure Sharing */}
             <div className="bg-background p-8 rounded-xl shadow-sm border hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4 mb-5">
                 <div className="p-3 rounded-lg bg-primary/10 text-primary">
                   <Lock className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-semibold">Password Protection</h3>
+                <h3 className="text-xl font-semibold">Secure Sharing</h3>
               </div>
               <p className="text-muted-foreground">
-                Add passwords to sensitive files. Only recipients with the
-                password can access your shared content.
+                Control access with passwords, expiration dates, and download
+                limits for each file.
               </p>
             </div>
 
-            {/* Feature 3 */}
+            {/* File Management */}
             <div className="bg-background p-8 rounded-xl shadow-sm border hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4 mb-5">
                 <div className="p-3 rounded-lg bg-primary/10 text-primary">
@@ -137,26 +150,26 @@ const HeroSection = () => {
                 <h3 className="text-xl font-semibold">File Management</h3>
               </div>
               <p className="text-muted-foreground">
-                Organize files in folders, add tags, and quickly find what you
-                need with advanced search capabilities.
+                Organize team files with folders, tags, and advanced search
+                capabilities.
               </p>
             </div>
 
-            {/* Feature 4 */}
+            {/* Real-Time Updates */}
             <div className="bg-background p-8 rounded-xl shadow-sm border hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4 mb-5">
                 <div className="p-3 rounded-lg bg-primary/10 text-primary">
-                  <Mail className="w-6 h-6" />
+                  <RefreshCw className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-semibold">Email Integration</h3>
+                <h3 className="text-xl font-semibold">Real-Time Updates</h3>
               </div>
               <p className="text-muted-foreground">
-                Send files directly via email with customizable messages and
-                delivery confirmations.
+                Get instant notifications when team members access or modify
+                shared files.
               </p>
             </div>
 
-            {/* Feature 5 */}
+            {/* File Previews */}
             <div className="bg-background p-8 rounded-xl shadow-sm border hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-4 mb-5">
                 <div className="p-3 rounded-lg bg-primary/10 text-primary">
@@ -167,20 +180,6 @@ const HeroSection = () => {
               <p className="text-muted-foreground">
                 Preview documents, images, and videos without downloading.
                 Supports 100+ file types.
-              </p>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="bg-background p-8 rounded-xl shadow-sm border hover:shadow-md transition-all duration-300">
-              <div className="flex items-center gap-4 mb-5">
-                <div className="p-3 rounded-lg bg-primary/10 text-primary">
-                  <RefreshCw className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-semibold">Real-Time Updates</h3>
-              </div>
-              <p className="text-muted-foreground">
-                Get instant notifications when files are accessed, downloaded,
-                or shared further.
               </p>
             </div>
           </div>
@@ -196,21 +195,21 @@ const HeroSection = () => {
                 variant="outline"
                 className="px-3 py-1 rounded-full border-primary/30 bg-primary/10 text-primary font-medium text-sm mb-4"
               >
-                Enterprise Security
+                Team Security
               </Badge>
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-6">
-                Military-Grade Protection for Your Files
+                Secure Collaboration for Your Team
               </h2>
               <p className="text-lg text-muted-foreground mb-8">
-                We use the same security standards as banks and government
-                agencies to keep your data safe at all times.
+                Bank-level security measures to protect your team&#39;s files
+                and communications.
               </p>
               <div className="space-y-4">
                 {[
                   "End-to-end encryption (AES-256)",
+                  "Role-based access control",
                   "Two-factor authentication",
-                  "Automatic virus scanning",
-                  "Expiring download links",
+                  "Activity audit logs",
                   "IP address restrictions",
                   "SOC 2 Type II compliant",
                 ].map((feature) => (
@@ -231,38 +230,38 @@ const HeroSection = () => {
                       <div className="w-3 h-3 rounded-full bg-primary/10"></div>
                     </div>
                     <div className="text-sm font-medium text-primary">
-                      security-dashboard
+                      team-dashboard
                     </div>
                   </div>
                   <div className="space-y-4">
                     <div className="bg-background p-4 rounded-lg border">
                       <div className="flex justify-between items-center">
                         <div className="text-sm font-medium">
-                          File Access Logs
+                          Recent Team Activity
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Updated 2s ago
+                          Updated just now
                         </div>
                       </div>
                       <div className="mt-3 space-y-3">
                         {[
                           {
-                            user: "john@company.com",
-                            action: "Downloaded",
-                            file: "Q4-Report.pdf",
-                            time: "Just now",
-                          },
-                          {
-                            user: "sarah@client.com",
-                            action: "Viewed",
-                            file: "Proposal.docx",
+                            user: "alex@team.com",
+                            action: "Uploaded",
+                            file: "Project-Brief.pdf",
                             time: "2 mins ago",
                           },
                           {
-                            user: "mike@partner.com",
+                            user: "sam@team.com",
+                            action: "Edited",
+                            file: "Design-Specs.docx",
+                            time: "15 mins ago",
+                          },
+                          {
+                            user: "jane@team.com",
                             action: "Shared",
-                            file: "Contract.pdf",
-                            time: "5 mins ago",
+                            file: "Budget.xlsx",
+                            time: "1 hour ago",
                           },
                         ].map((log, i) => (
                           <div
@@ -286,28 +285,17 @@ const HeroSection = () => {
                     </div>
                     <div className="bg-background p-4 rounded-lg border">
                       <div className="text-sm font-medium mb-2">
-                        Security Status
+                        Team Storage
                       </div>
-                      <div className="flex items-center gap-2 text-sm">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                        <div>All systems secure</div>
+                      <div className="w-full bg-muted rounded-full h-2 mb-2">
+                        <div
+                          className="bg-primary h-2 rounded-full"
+                          style={{ width: "65%" }}
+                        ></div>
                       </div>
-                      <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
-                        {[
-                          "Encryption",
-                          "Firewall",
-                          "2FA",
-                          "Virus Scan",
-                          "Backups",
-                          "Audit Logs",
-                        ].map((item) => (
-                          <div
-                            key={item}
-                            className="bg-muted/50 p-2 rounded text-center"
-                          >
-                            {item} ✓
-                          </div>
-                        ))}
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>15.2 GB of 25 GB used</span>
+                        <span>65%</span>
                       </div>
                     </div>
                   </div>
@@ -322,20 +310,20 @@ const HeroSection = () => {
       <div className="bg-gradient-to-br from-primary/10 to-primary/5 py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-6">
-            Ready to transform your file sharing?
+            Ready to upgrade your team&#39;s file sharing?
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Join thousands of professionals who trust our platform for secure,
-            efficient file management.
+            Get started with FileDrop today and experience seamless team
+            collaboration with enterprise-grade security.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/signup">
+            <Link href="/dashboard">
               <Button size="lg" className="gap-2 px-8">
                 Start Free Trial
               </Button>
             </Link>
             <Button variant="outline" size="lg" className="gap-2 px-8">
-              Schedule Demo
+              Contact Sales
             </Button>
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
