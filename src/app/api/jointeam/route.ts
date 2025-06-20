@@ -1,6 +1,7 @@
 import dbConnect from "@/database/mongodb/dbConnect";
 import Team from "@/database/mongodb/models/team.model";
 import User from "@/database/mongodb/models/user.model";
+import { Types } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(req: NextRequest) {
@@ -21,12 +22,6 @@ export async function PATCH(req: NextRequest) {
         { status: 404 }
       );
     }
-    if (user.teams.includes(teamId)) {
-      return NextResponse.json(
-        { message: "User already a member of this team.", success: false },
-        { status: 400 }
-      );
-    }
 
     const team = await Team.findOne({ teamId });
     if (!team) {
@@ -35,7 +30,15 @@ export async function PATCH(req: NextRequest) {
         { status: 404 }
       );
     }
-
+    if (user.teams.includes(team._id as Types.ObjectId)) {
+      return NextResponse.json(
+        {
+          message: "You Already a member/leader of this team.",
+          success: false,
+        },
+        { status: 400 }
+      );
+    }
     team.teamMembers.push(user._id as (typeof team.teamMembers)[0]);
     await team.save();
     user.teams.push(team._id as (typeof user.teams)[0]);

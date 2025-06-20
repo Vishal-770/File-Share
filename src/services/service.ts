@@ -194,3 +194,16 @@ export const UploadFilesToTeam = async ({
     throw error;
   }
 };
+
+export const DelteTeamFile = async ({
+  fileId,
+  teamId,
+}: {
+  fileId: string;
+  teamId: string;
+}) => {
+  const res = await api.delete("/api/deleteteamfile", {
+    params: { fileId, teamId },
+  });
+  console.log(res);
+};

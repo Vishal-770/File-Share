@@ -10,20 +10,39 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { IUsers } from "@/database/mongodb/models/user.model";
 import {
+  DelteTeamFile,
   FetchTeam,
   getFileDetails,
   UploadFilesToTeam,
 } from "@/services/service";
 import { useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ArrowLeft, File, Mail, Menu, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  Eye,
+  File,
+  Lock,
+  Mail,
+  Menu,
+  Trash2,
+  X,
+  AlertTriangle,
+} from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { handleDownload } from "@/utils/functions";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface FileItem {
   _id: string;
@@ -31,6 +50,7 @@ interface FileItem {
   fileName: string;
   fileUrl: string;
   fileType: string;
+  clerkId: string;
 }
 
 const TeamDetail = () => {
@@ -41,7 +61,9 @@ const TeamDetail = () => {
   const clerkId = user?.id;
   const [showSidebar, setShowSidebar] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogOpen1, setDialogOpen1] = useState(false);
   const [selectedFileIds, setSelectedFileIds] = useState<string[]>([]);
+  const [fileToDelete, setFileToDelete] = useState<FileItem | null>(null);
 
   const {
     data: teamData,
@@ -62,6 +84,7 @@ const TeamDetail = () => {
     queryFn: () => getFileDetails(clerkId!),
     enabled: isLoaded && !!clerkId,
   });
+
   // Mutation
   const AddFileMutation = useMutation({
     mutationFn: async () =>
@@ -75,10 +98,21 @@ const TeamDetail = () => {
       setSelectedFileIds([]);
       refetch();
     },
-    onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.message || "Failed to add files to the team."
-      );
+    onError: () => {
+      toast.error("Failed to add files to the team.");
+    },
+  });
+
+  const DeleteFileMutation = useMutation({
+    mutationFn: DelteTeamFile,
+    onSuccess: () => {
+      toast.success("File deleted successfully");
+      setDialogOpen1(false);
+      setFileToDelete(null);
+      refetch();
+    },
+    onError: () => {
+      toast.error("Failed to delete file from the team.");
     },
   });
 
@@ -117,8 +151,26 @@ const TeamDetail = () => {
       return;
     }
 
-    AddFileMutation.mutate(); // Trigger mutation
+    AddFileMutation.mutate();
   };
+
+  const handleDeleteClick = (file: FileItem) => {
+    setFileToDelete(file);
+    setDialogOpen1(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!fileToDelete || !teamId) {
+      toast.error("Missing required information for deletion.");
+      return;
+    }
+
+    DeleteFileMutation.mutate({
+      fileId: fileToDelete.fileId,
+      teamId,
+    });
+  };
+
   if (fileError)
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -172,6 +224,13 @@ const TeamDetail = () => {
     );
   }
 
+  const files = fileData?.files || [];
+  const files_not_in_team = files.filter((file: FileItem) => {
+    return !teamData.files.some(
+      (teamFile: FileItem) => teamFile.fileId === file.fileId
+    );
+  });
+
   return (
     <div className="flex flex-col md:flex-row h-screen">
       {/* Mobile header */}
@@ -192,47 +251,93 @@ const TeamDetail = () => {
       {/* Main content */}
       <div className="flex-1 overflow-y-auto bg-muted/20 p-4 md:p-6">
         <div className="max-w-4xl mx-auto space-y-6">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center flex-wrap gap-2">
             <h1 className="text-2xl font-bold">
               {teamData?.teamName} Workspace
             </h1>
-            <Button
-              onClick={handleAddFiles}
-              disabled={
-                selectedFileIds.length === 0 ||
-                AddFileMutation.status === "pending"
-              }
-            >
-              {AddFileMutation.status === "pending"
-                ? "Adding..."
-                : "Add Selected Files"}
-            </Button>
+            <Button onClick={() => setDialogOpen(true)}>Add Files</Button>
           </div>
-
           <Card>
             <CardHeader>
-              <CardTitle>Team Files</CardTitle>
+              <CardTitle className="text-lg md:text-xl">Team Files</CardTitle>
             </CardHeader>
             <CardContent>
               {teamData?.files?.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {teamData.files.map((file: FileItem, i: number) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {teamData.files.map((file: FileItem) => (
                     <div
-                      key={i}
-                      className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                      key={file.fileId}
+                      className="border rounded-xl p-4 hover:shadow-md transition-shadow bg-background flex flex-col h-full"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="bg-muted rounded-md p-2">
+                      <div className="flex items-start gap-3 flex-1">
+                        <div className="bg-muted rounded-lg p-3 flex-shrink-0">
                           <File className="w-5 h-5 text-primary" />
                         </div>
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 space-y-1">
                           <p className="text-sm font-medium truncate">
                             {file.fileName}
                           </p>
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="text-xs text-muted-foreground">
                             {file.fileType}
                           </p>
                         </div>
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap gap-2 justify-end">
+                        <a
+                          href={file.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex"
+                        >
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1.5 text-xs h-8"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span className="sr-only sm:not-sr-only">
+                              Preview
+                            </span>
+                          </Button>
+                        </a>
+                        <Button
+                          onClick={() =>
+                            handleDownload(file.fileUrl, file.fileName)
+                          }
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5 text-xs h-8"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span className="sr-only sm:not-sr-only">
+                            Download
+                          </span>
+                        </Button>
+                        {file.clerkId === user?.id ? (
+                          <Button
+                            onClick={() => handleDeleteClick(file)}
+                            variant="destructive"
+                            size="sm"
+                            className="gap-1.5 text-xs h-8"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span className="sr-only sm:not-sr-only">
+                              Delete
+                            </span>
+                          </Button>
+                        ) : (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-xs text-muted-foreground self-center">
+                                <Lock className="w-3.5 h-3.5 inline mr-1" />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Only the uploader can delete this file</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -385,8 +490,8 @@ const TeamDetail = () => {
             </div>
 
             <div className="border rounded-lg divide-y max-h-[400px] overflow-y-auto">
-              {fileData?.files?.length > 0 ? (
-                fileData.files.map((file: FileItem) => (
+              {files_not_in_team.length > 0 ? (
+                files_not_in_team.map((file: FileItem) => (
                   <div
                     key={file.fileId}
                     className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer"
@@ -418,7 +523,8 @@ const TeamDetail = () => {
                   <h3 className="text-lg font-medium">No files available</h3>
                   <p className="text-sm text-muted-foreground">
                     You haven&#39;t uploaded any files yet. Upload files to
-                    share them with your team.
+                    share them with your team, or All ur Files Are Already
+                    Shared In this Team
                   </p>
                 </div>
               )}
@@ -431,9 +537,59 @@ const TeamDetail = () => {
             </Button>
             <Button
               onClick={handleAddFiles}
-              disabled={selectedFileIds.length === 0}
+              disabled={
+                selectedFileIds.length === 0 || files_not_in_team.length === 0
+              }
             >
               Add Selected Files
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={dialogOpen1} onOpenChange={setDialogOpen1}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="bg-destructive/20 p-2 rounded-full">
+                <AlertTriangle className="w-6 h-6 text-destructive" />
+              </div>
+              <div>
+                <DialogTitle>Delete File</DialogTitle>
+                <DialogDescription className="mt-1">
+                  This action cannot be undone.
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to delete{" "}
+              <span className="font-medium text-foreground">
+                {fileToDelete?.fileName}
+              </span>{" "}
+              from this team?
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDialogOpen1(false);
+                setFileToDelete(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={DeleteFileMutation.isPending}
+            >
+              {DeleteFileMutation.isPending ? "Deleting..." : "Delete File"}
             </Button>
           </DialogFooter>
         </DialogContent>
