@@ -2,6 +2,7 @@ import dbConnect from "@/database/mongodb/dbConnect";
 import FileModel, { IFile } from "@/database/mongodb/models/file.model";
 import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
+import QRCode from "qrcode-generator";
 import User from "@/database/mongodb/models/user.model";
 
 export async function POST(req: NextRequest) {
@@ -21,6 +22,12 @@ export async function POST(req: NextRequest) {
       );
     }
     const fileId = nanoid(10);
+    const qr = QRCode(0, "L"); // version 0 = auto; 'L' = error correction level
+    qr.addData(`${process.env.BASE_URL!}/share?fileId=${fileId}`);
+    qr.make();
+
+    const qrCode = qr.createDataURL(); // returns base64 image
+
     const newFile = new FileModel({
       fileName,
       fileType,
@@ -29,6 +36,7 @@ export async function POST(req: NextRequest) {
       clerkId,
       filePath,
       fileId,
+      qrCode,
     });
     await newFile.save();
     const UserDetails = await User.findOne({ clerkId });
@@ -36,7 +44,7 @@ export async function POST(req: NextRequest) {
       UserDetails.current_storage_size += size;
       await UserDetails.save();
     }
-    
+
     return NextResponse.json(
       {
         message: "File Details Saved Successfully",

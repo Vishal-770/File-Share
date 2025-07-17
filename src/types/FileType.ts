@@ -8,6 +8,7 @@ export default interface FileDetails {
   filePath: string;
   password?: string;
   fileId: string;
+  qrCode: string;
 }
 export interface PasswordBody {
   password: string;

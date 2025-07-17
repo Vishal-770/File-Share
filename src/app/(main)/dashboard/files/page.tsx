@@ -270,7 +270,7 @@ const FileDisplayPage = () => {
       {filteredFiles?.length === 0 ? (
         <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4 text-center p-6">
           <Image
-            src="/empty-folder.svg"
+            src="/emptyfolder.webp"
             alt="No files"
             width={200}
             height={200}

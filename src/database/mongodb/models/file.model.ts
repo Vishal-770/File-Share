@@ -10,6 +10,7 @@ export interface IFile extends Document {
   clerkId: string;
   fileId: string;
   password?: string;
+  qrCode?: string;
 }
 
 // Define schema
@@ -46,6 +47,9 @@ const fileSchema: Schema<IFile> = new Schema<IFile>(
     fileId: {
       type: String,
       required: true,
+    },
+    qrCode: {
+      type: String,
     },
   },
   { timestamps: true }
