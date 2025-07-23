@@ -178,12 +178,12 @@ export default function PublicUploadPage() {
           )}
 
           {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 items-center justify-evenly">
             {files.length > 0 && (
               <Button
                 onClick={handleUploadClick}
                 disabled={uploadMutation.isPending}
-                className="flex-1 gap-2"
+                className=" gap-2"
                 size="lg"
               >
                 {uploadMutation.isPending ? (
