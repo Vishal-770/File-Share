@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { ReactNode, useState } from "react";
 import { FileUpload } from "@/components/ui/file-upload";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -17,6 +17,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Image from "next/image";
+import { X, UploadCloud, QrCode, ArrowLeft, File, Loader2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 export default function PublicUploadPage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -24,15 +26,22 @@ export default function PublicUploadPage() {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
   const [publicUrl, setPublicUrl] = useState<string>("");
   const [showQrDialog, setShowQrDialog] = useState<boolean>(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   const router = useRouter();
 
   const handleFileUpload = (uploadedFiles: File[]) => {
-    setFiles(uploadedFiles);
+    setFiles((prev) => [...prev, ...uploadedFiles]);
+  };
+
+  const removeFile = (index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const uploadMutation = useMutation({
     mutationFn: async () => {
       const urls: string[] = [];
+      const totalFiles = files.length;
+      let completedFiles = 0;
 
       for (const file of files) {
         const filePath = `publicuploads/${Date.now()}-${file.name}`;
@@ -40,19 +49,21 @@ export default function PublicUploadPage() {
           .from("uploads")
           .upload(filePath, file, { upsert: true });
 
-        if (error)
+        if (error) {
           throw new Error(`Failed to upload ${file.name}: ${error.message}`);
+        }
 
         const { data } = supabase.storage
           .from("uploads")
           .getPublicUrl(filePath);
 
         urls.push(data.publicUrl);
+        completedFiles++;
+        setUploadProgress(Math.round((completedFiles / totalFiles) * 100));
       }
 
       const res = await UploadPublicFiles(urls);
 
-      // Convert Blob QR code to base64 if needed
       const qrCodeData = res?.data?.qrCode;
       if (qrCodeData instanceof Blob) {
         const base64 = await blobToBase64(qrCodeData);
@@ -68,112 +79,226 @@ export default function PublicUploadPage() {
       setFiles([]);
       setResetKey(Date.now().toString());
       setShowQrDialog(true);
-      toast.success("Files uploaded and QR code generated!");
+      setUploadProgress(0);
+      toast.success("Files uploaded successfully!");
     },
     onError: (err) => {
-      toast.error(err.message || "Upload failed.");
+      setUploadProgress(0);
+      toast.error(err.message || "Upload failed");
     },
   });
 
   const handleUploadClick = () => {
     if (!files.length) {
-      toast.warning("Please select files first.");
+      toast.warning("Please select files first");
       return;
     }
     uploadMutation.mutate();
   };
 
   return (
-    <main className="w-full h-screen px-4 py-16">
-      <div className="max-w-4xl mx-auto flex flex-col justify-between h-full space-y-8">
+    <main className="w-full min-h-screen px-4 py-8 sm:py-16 bg-background">
+      <div className="max-w-4xl mx-auto flex flex-col h-full">
         {/* Top bar */}
-        <div className="flex justify-between items-center">
-          <Button variant="ghost" onClick={() => router.back()}>
-            ← Back
+        <div className="flex justify-between items-center mb-6 sm:mb-8">
+          <Button
+            variant="ghost"
+            onClick={() => router.back()}
+            className="gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
           </Button>
           <ModeToggle />
         </div>
 
         {/* Header */}
-        <section className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
+        <section className="text-center mb-8 sm:mb-12">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             Public File Upload
           </h1>
-          <p className="mt-2 text-neutral-600 dark:text-neutral-400">
-            Upload your files to share publicly. Avoid sensitive content—uploads
-            may be visible to others.
+          <p className="mt-2 text-sm sm:text-base text-muted-foreground">
+            Upload your files to share publicly. Avoid sensitive content.
           </p>
         </section>
 
-        {/* Upload area */}
-        <div className="flex-grow border border-dashed border-muted rounded-xl p-6 shadow-sm overflow-y-auto custom-scroll">
-          <FileUpload onChange={handleFileUpload} resetKey={resetKey} />
+        {/* Main content */}
+        <div className="flex flex-col flex-grow gap-6">
+          {/* Upload area (fixed height) */}
+          <div className="h-64 border-2 border-dashed border-foreground/50 rounded-xl p-4 flex flex-col items-center justify-center">
+            <FileUpload
+              onChange={handleFileUpload}
+              resetKey={resetKey}
+            ></FileUpload>
+          </div>
+
+          {/* Files list (scrollable) */}
+          {files.length > 0 && (
+            <div className="flex-1 overflow-hidden">
+              <div className="h-full max-h-[300px] overflow-y-auto custom-scroll border rounded-lg divide-y">
+                {files.map((file, index) => (
+                  <div
+                    key={`${file.name}-${index}`}
+                    className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <FileIcon extension={getFileExtension(file.name)} />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">
+                          {file.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatFileSize(file.size)}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => removeFile(index)}
+                    >
+                      <X className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Upload progress */}
+          {uploadMutation.isPending && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Uploading files...</span>
+                <span>{uploadProgress}%</span>
+              </div>
+              <Progress value={uploadProgress} className="h-2" />
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {files.length > 0 && (
+              <Button
+                onClick={handleUploadClick}
+                disabled={uploadMutation.isPending}
+                className="flex-1 gap-2"
+                size="lg"
+              >
+                {uploadMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <UploadCloud className="w-4 h-4" />
+                    Upload {files.length} file{files.length > 1 ? "s" : ""}
+                  </>
+                )}
+              </Button>
+            )}
+
+            {qrCodeUrl && !uploadMutation.isPending && (
+              <Dialog open={showQrDialog} onOpenChange={setShowQrDialog}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="flex-1 gap-2" size="lg">
+                    <QrCode className="w-4 h-4" />
+                    View QR Code
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Share Your Files</DialogTitle>
+                  </DialogHeader>
+                  <div className="flex flex-col items-center py-4 gap-4">
+                    <div className="relative w-48 h-48">
+                      <Image
+                        src={qrCodeUrl}
+                        alt="QR Code"
+                        fill
+                        className="object-contain"
+                        unoptimized
+                      />
+                    </div>
+                    <div className="w-full text-center">
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Scan to access or share this link:
+                      </p>
+                      <a
+                        href={publicUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-primary hover:underline break-all"
+                      >
+                        {publicUrl}
+                      </a>
+                    </div>
+                    <Button
+                      onClick={() => navigator.clipboard.writeText(publicUrl)}
+                      size="sm"
+                      variant="outline"
+                      className="mt-2"
+                    >
+                      Copy Link
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
         </div>
 
-        {/* Upload button */}
-        {files.length > 0 && (
-          <div className="flex justify-center">
-            <Button
-              onClick={handleUploadClick}
-              disabled={uploadMutation.isPending}
-              className="w-full sm:w-auto"
-            >
-              {uploadMutation.isPending ? "Uploading..." : "Upload Files"}
-            </Button>
-          </div>
-        )}
-
-        {/* QR Code Dialog */}
-        {qrCodeUrl && !uploadMutation.isPending && (
-          <div className="flex justify-center">
-            <Dialog open={showQrDialog} onOpenChange={setShowQrDialog}>
-              <DialogTrigger asChild>
-                <Button variant="outline">View QR Code</Button>
-              </DialogTrigger>
-              <DialogContent className="w-full max-w-md text-center">
-                <DialogHeader>
-                  <DialogTitle>Shareable QR Code</DialogTitle>
-                </DialogHeader>
-                <div className="my-4 space-y-4">
-                  <div className="relative w-48 h-48 mx-auto">
-                    <Image
-                      src={qrCodeUrl}
-                      alt="QR Code"
-                      fill
-                      className="object-contain rounded-md shadow-lg"
-                    />
-                  </div>
-                  <div>
-                    <p className="text-sm text-neutral-500 mb-1">
-                      Or open directly:
-                    </p>
-                    <a
-                      href={publicUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:underline break-all"
-                    >
-                      {publicUrl}
-                    </a>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        )}
-
         {/* Footer */}
-        <footer className="text-center text-xs text-neutral-400 mt-6">
-          Files are stored in public space. Do not upload anything private or
-          confidential.
+        <footer className="mt-8 pt-4 border-t text-center text-xs text-muted-foreground">
+          Files are stored in public space. Do not upload private or
+          confidential information.
         </footer>
       </div>
     </main>
   );
 }
 
-// Helper: convert Blob to base64
-function blobToBase64(blob: Blob): Promise<string> {
+// Helper components and functions
+function FileIcon({ extension }: { extension: string }) {
+  const iconClass = "w-5 h-5 text-muted-foreground";
+  const commonExtensions: Record<string, ReactNode> = {
+    pdf: <File className={iconClass} />,
+    doc: <File className={iconClass} />,
+    docx: <File className={iconClass} />,
+    xls: <File className={iconClass} />,
+    xlsx: <File className={iconClass} />,
+    ppt: <File className={iconClass} />,
+    pptx: <File className={iconClass} />,
+    jpg: <File className={iconClass} />,
+    jpeg: <File className={iconClass} />,
+    png: <File className={iconClass} />,
+    gif: <File className={iconClass} />,
+    mp4: <File className={iconClass} />,
+    mp3: <File className={iconClass} />,
+    zip: <File className={iconClass} />,
+    txt: <File className={iconClass} />,
+  };
+
+  return (
+    commonExtensions[extension.toLowerCase()] || <File className={iconClass} />
+  );
+}
+
+function getFileExtension(filename: string): string {
+  return filename.split(".").pop() || "";
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 * 1024 * 1024)
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+}
+
+async function blobToBase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => resolve(reader.result as string);
