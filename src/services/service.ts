@@ -207,3 +207,15 @@ export const DelteTeamFile = async ({
   });
   console.log(res);
 };
+
+export async function UploadPublicFiles(fileUrls: string[]) {
+  try {
+    const res = await api.post("/api/publicFileUpload", { fileUrls });
+    return res;
+  } catch (err) {
+    throw new Error(
+      `Failed Uploading Files: ${err instanceof Error ? err.message : String(err)}`
+    );
+    console.log(err);
+  }
+}

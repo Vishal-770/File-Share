@@ -18,10 +18,15 @@ const secondaryVariant = {
 
 export const FileUpload = ({
   onChange,
+  resetKey = "",
 }: {
   onChange?: (files: File[]) => void;
+  resetKey?: string;
 }) => {
   const [files, setFiles] = useState<File[]>([]);
+  React.useEffect(() => {
+    setFiles([]);
+  }, [resetKey]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (newFiles: File[]) => {
