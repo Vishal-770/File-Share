@@ -21,3 +21,13 @@ export const handleDownload = async (fileUrl: string, fileName: string) => {
     });
   }
 };
+
+export function extractCleanFileName(url: string): string {
+  try {
+    const fileName = url.split("/").pop() || "";
+    // Remove leading digits and hyphen
+    return decodeURIComponent(fileName.replace(/^\d+-/, ""));
+  } catch {
+    return "";
+  }
+}

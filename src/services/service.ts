@@ -213,9 +213,21 @@ export async function UploadPublicFiles(fileUrls: string[]) {
     const res = await api.post("/api/publicFileUpload", { fileUrls });
     return res;
   } catch (err) {
+    console.log(err);
     throw new Error(
       `Failed Uploading Files: ${err instanceof Error ? err.message : String(err)}`
     );
-    console.log(err);
+  }
+}
+
+export async function GetPublicFiles(uniqueId: string) {
+  try {
+    const res = await axios.get(`/api/fetchPublicFiles?uniqueId=${uniqueId}`);
+    return res.data;
+  } catch (err) {
+    console.error("Failed to fetch public files:", err);
+    throw new Error(
+      err instanceof Error ? err.message : "Unknown error occurred"
+    );
   }
 }
