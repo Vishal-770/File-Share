@@ -42,6 +42,7 @@ const FileCard = ({
   setPassword: (password: string) => void;
 }) => {
   const [qrCodeDialog, setQrCodeDialog] = useState<boolean>(false);
+  console.log(file);
   return (
     <>
       <Card key={file._id} className="hover:shadow-md transition-shadow">

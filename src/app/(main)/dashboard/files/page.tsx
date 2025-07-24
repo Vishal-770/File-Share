@@ -47,7 +47,7 @@ const FileDisplayPage = () => {
   const [fileType, setFileType] = useState<string>("All");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["files", clerkId],
     queryFn: () => getFileDetails(clerkId!),
     enabled: isLoaded && !!clerkId,
@@ -101,7 +101,7 @@ const FileDisplayPage = () => {
     mutationFn: UpdatePassword,
     onSuccess: () => {
       toast.success("Password updated successfully");
-      queryClient.invalidateQueries({ queryKey: ["files", clerkId] });
+      refetch();
       setPassword(null);
       setPasswordFileUrl(null);
     },
@@ -226,6 +226,7 @@ const FileDisplayPage = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 w-full md:w-80"
+              
             />
           </div>
 
@@ -356,7 +357,7 @@ const FileDisplayPage = () => {
       <PasswordChangeDialog
         passwordFileUrl={passwordFileUrl}
         setPasswordFileUrl={setPasswordFileUrl}
-        password={password}
+        password={password ?? " "}
         setPassword={setPassword}
         handleUpdatePassword={handleUpdatePassword}
         passwordMutation={passwordMutation}
