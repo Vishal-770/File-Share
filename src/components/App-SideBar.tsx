@@ -29,7 +29,7 @@ const mainItems = [
     icon: HomeIcon,
   },
   {
-    title: "Dashboard",
+    title: "Upload",
     url: "/dashboard",
     icon: Upload,
   },
@@ -80,7 +80,7 @@ export default function AppSidebar() {
             </span>
           </div>
         </div>
-        
+
         {/* Collapsed Header - Only Icon */}
         <div className="hidden group-data-[collapsible=icon]:flex items-center justify-center py-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
