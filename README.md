@@ -1,36 +1,183 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# File Drop - Secure File Sharing Platform
 
-## Getting Started
+A modern, secure file sharing platform built with Next.js 15, featuring team collaboration, password protection, and public sharing capabilities with custom authentication pages.
 
-First, run the development server:
+## ✨ Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### 🔐 **Secure Authentication**
+- Custom branded login/signup pages with theme support
+- Social authentication (Google, GitHub, etc.)
+- Secure session management with Clerk
+- Proper routing with catch-all authentication routes
+
+### 📁 **File Management**
+- Personal file storage and organization
+- Drag & drop file uploads
+- File renaming and deletion
+- Multiple file format support
+
+### 👥 **Team Collaboration**
+- Create and manage teams
+- Share files within teams
+- Team member management
+- Collaborative workspaces
+
+### 🔗 **Public Sharing**
+- Public file upload links
+- Password-protected files
+- Temporary file sharing
+- QR code generation for easy sharing
+
+### 🎨 **Modern UI/UX**
+- Dark/Light mode support with theme-aware authentication
+- Responsive design
+- Beautiful animations with Framer Motion
+- Custom UI components with Radix UI
+
+## 🛠️ Tech Stack
+
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Styling**: Tailwind CSS, Shadcn/ui, Lucide Icons
+- **Authentication**: Clerk
+- **Database**: MongoDB, Supabase
+- **File Storage**: Vercel Blob
+- **Email**: Resend
+- **Deployment**: Vercel
+
+## 🏗️ Project Structure
+
+```
+src/
+├── app/
+│   ├── (auth)/              # Authentication pages
+│   │   ├── sign-in/         # Custom sign-in page
+│   │   └── sign-up/         # Custom sign-up page
+│   ├── (main)/              # Protected dashboard routes
+│   │   └── dashboard/       # Main dashboard
+│   ├── (public)/            # Public file sharing
+│   ├── (share)/             # File sharing interface
+│   ├── (website)/           # Landing page
+│   └── api/                 # API routes
+├── components/
+│   ├── ui/                  # Reusable UI components
+│   └── emailtemplates/      # Email templates
+├── database/
+│   ├── mongodb/             # MongoDB schemas
+│   └── supabase/            # Supabase client
+├── hooks/                   # Custom React hooks
+├── lib/                     # Utility libraries
+├── services/                # External services
+├── types/                   # TypeScript types
+└── utils/                   # Helper functions
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Getting Started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Prerequisites
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Node.js 18+ 
+- npm or yarn
+- MongoDB database
+- Clerk account
+- Supabase account
+- Vercel account (for blob storage)
+- Resend account (for emails)
 
-## Learn More
+### Installation
 
-To learn more about Next.js, take a look at the following resources:
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd file-sharing-app/File-Share
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Environment Setup**
+   
+   Copy `.env.local.example` to `.env.local` and fill in your values:
+   
+   ```env
+   # Clerk Authentication
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+   CLERK_SECRET_KEY=your_clerk_secret_key
+   NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+   NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+   NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard
+   NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/dashboard
+   
+   # Database
+   MONGODB_URL=your_mongodb_connection_string
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   
+   # File Storage
+   BLOB_READ_WRITE_TOKEN=your_vercel_blob_token
+   
+   # Email
+   RESEND_API_KEY=your_resend_api_key
+   
+   # App Configuration
+   NEXT_PUBLIC_BASE_URL=http://localhost:3000
+   BASE_URL=http://localhost:3000
+   WEBHOOK_SECRET=your_webhook_secret
+   ```
 
-## Deploy on Vercel
+4. **Run the development server**
+   ```bash
+   npm run dev
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+5. **Open your browser**
+   
+   Navigate to [http://localhost:3000](http://localhost:3000)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📝 Configuration
+
+### Authentication Setup
+
+1. Create a [Clerk](https://clerk.com) account
+2. Set up your application with the following settings:
+   - Sign-in URL: `/sign-in`
+   - Sign-up URL: `/sign-up`
+   - After sign-in URL: `/dashboard`
+   - After sign-up URL: `/dashboard`
+
+## 🎨 Customization
+
+### Theme Configuration
+
+The app supports light/dark themes. Customize colors in:
+- `src/app/globals.css` - CSS variables
+- `tailwind.config.js` - Tailwind theme
+
+### Authentication Styling
+
+Customize Clerk components in:
+- `src/app/(auth)/sign-in/page.tsx`
+- `src/app/(auth)/sign-up/page.tsx`
+
+## 🔒 Security Features
+
+- **Authentication**: Secure login with Clerk
+- **File Protection**: Password-protected sharing
+- **Access Control**: Team-based permissions
+- **Data Validation**: Input sanitization and validation
+- **Secure Storage**: Encrypted file storage
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+
+1. **Connect your repository to Vercel**
+2. **Add environment variables**
+3. **Deploy**
+
+The app will be automatically deployed with optimizations.
+
+---
+
+Built with ❤️ using Next.js and modern web technologies

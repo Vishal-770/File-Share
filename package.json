@@ -1,12 +1,27 @@
 {
-  "name": "file-sharing-app",
-  "version": "0.1.0",
+  "name": "file-drop",
+  "version": "1.0.0",
+  "description": "A modern, secure file sharing platform with team collaboration",
   "private": true,
+  "author": "Your Name",
+  "license": "MIT",
+  "keywords": [
+    "file-sharing",
+    "collaboration",
+    "nextjs",
+    "typescript",
+    "clerk",
+    "secure"
+  ],
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf .next && rm -rf out",
+    "analyze": "ANALYZE=true npm run build"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.21.0",

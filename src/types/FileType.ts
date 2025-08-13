@@ -1,4 +1,7 @@
-export default interface FileDetails {
+/**
+ * File Management Types
+ */
+export interface FileDetails {
   _id: string;
   fileName: string;
   fileType: string;
@@ -9,11 +12,93 @@ export default interface FileDetails {
   password?: string;
   fileId: string;
   qrCode: string;
+  uploadedBy?: string;
+  isPublic?: boolean;
+  downloadCount?: number;
+  lastAccessed?: string;
 }
+
 export interface PasswordBody {
   password: string;
   fileUrl: string;
 }
+
+export interface FileUploadProgress {
+  fileId: string;
+  fileName: string;
+  progress: number;
+  status: "uploading" | "completed" | "error";
+  error?: string;
+}
+
+export interface FileShareSettings {
+  isPublic: boolean;
+  password?: string;
+  expiresAt?: string;
+  downloadLimit?: number;
+  allowedEmails?: string[];
+}
+
+/**
+ * Team Management Types
+ */
+export interface Team {
+  _id: string;
+  name: string;
+  description?: string;
+  ownerId: string;
+  members: TeamMember[];
+  createdAt: string;
+  updatedAt: string;
+  isActive: boolean;
+}
+
+export interface TeamMember {
+  userId: string;
+  email: string;
+  name: string;
+  role: "owner" | "admin" | "member";
+  joinedAt: string;
+  isActive: boolean;
+}
+
+export interface TeamFile extends FileDetails {
+  teamId: string;
+  sharedBy: string;
+  permissions: FilePermission[];
+}
+
+export interface FilePermission {
+  userId: string;
+  canEdit: boolean;
+  canDelete: boolean;
+  canShare: boolean;
+}
+
+/**
+ * API Response Types
+ */
+export interface ApiResponse<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+export interface PaginatedResponse<T> extends ApiResponse<T[]> {
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+/**
+ * User Management Types
+ */
 export interface ClerkUser {
   backup_code_enabled: boolean;
   banned: boolean;
@@ -118,3 +203,73 @@ interface Web3Wallet {
   web3_wallet: string;
   object: "web3_wallet";
 }
+
+/**
+ * Email Types
+ */
+export interface EmailTemplate {
+  subject: string;
+  html: string;
+  text?: string;
+}
+
+export interface EmailSendRequest {
+  to: string[];
+  from: string;
+  subject: string;
+  fileUrl: string;
+  fileName: string;
+  message?: string;
+}
+
+/**
+ * Component Props Types
+ */
+export interface FileListProps {
+  files: FileDetails[];
+  isLoading: boolean;
+  onFileSelect?: (file: FileDetails) => void;
+  onFileDelete?: (fileId: string) => void;
+  onFileRename?: (fileId: string, newName: string) => void;
+  showActions?: boolean;
+}
+
+export interface FileUploadProps {
+  onUploadComplete?: (files: FileDetails[]) => void;
+  onUploadProgress?: (progress: FileUploadProgress[]) => void;
+  acceptedFileTypes?: string[];
+  maxFileSize?: number;
+  multiple?: boolean;
+  teamId?: string;
+}
+
+export interface TeamSelectorProps {
+  selectedTeam?: string;
+  onTeamChange?: (teamId: string) => void;
+  showCreateOption?: boolean;
+}
+
+/**
+ * Form Types
+ */
+export interface CreateTeamForm {
+  name: string;
+  description: string;
+}
+
+export interface JoinTeamForm {
+  teamId: string;
+  inviteCode?: string;
+}
+
+export interface ShareFileForm {
+  fileId: string;
+  shareType: "public" | "team" | "password" | "email";
+  password?: string;
+  expiresAt?: Date;
+  allowedEmails?: string[];
+  message?: string;
+}
+
+// Export default for backward compatibility
+export default FileDetails;

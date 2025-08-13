@@ -12,8 +12,9 @@ import {
 } from "@/components/ui/resizable-navbar";
 import { useState } from "react";
 import { ModeToggle } from "./ModeToggle";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import { Button } from "./ui/button";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+
+import { useRouter } from "next/navigation";
 
 export function NavbarDemo() {
   const navItems = [
@@ -32,7 +33,7 @@ export function NavbarDemo() {
   ];
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
+  const router = useRouter();
   return (
     <div className="relative w-full z-50">
       <Navbar>
@@ -42,11 +43,7 @@ export function NavbarDemo() {
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
             <SignedOut>
-              <NavbarButton className="p-0">
-                <SignInButton mode="modal">
-                  <Button>SignIn</Button>
-                </SignInButton>
-              </NavbarButton>
+              <NavbarButton href="/sign-in">Sign In</NavbarButton>
             </SignedOut>
             <SignedIn>
               <UserButton />
@@ -84,9 +81,12 @@ export function NavbarDemo() {
             ))}
             <div className="flex w-full flex-col gap-4">
               <SignedOut>
-                <SignInButton mode="modal">
-                  <Button>SignIn</Button>
-                </SignInButton>
+                <NavbarButton
+                  onClick={() => router.push("/sign-in")}
+                  className="w-full"
+                >
+                  Sign In
+                </NavbarButton>
               </SignedOut>
               <SignedIn>
                 <UserButton />
@@ -102,7 +102,3 @@ export function NavbarDemo() {
     </div>
   );
 }
-
-
-
-
