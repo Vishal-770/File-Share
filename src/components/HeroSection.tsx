@@ -25,6 +25,7 @@ import {
   Music,
 } from "lucide-react";
 import Link from "next/link";
+import Footer from "@/components/Footer";
 
 // Animated Counter Component
 function AnimatedCounter({
@@ -737,6 +738,9 @@ export default function FileDropLanding() {
           </motion.div>
         </div>
       </section>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
