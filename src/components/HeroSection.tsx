@@ -95,7 +95,14 @@ function Marquee({
 // Chart Components
 function LineChart() {
   const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Prevent hydration mismatch by using consistent values until mounted
+  const isDark = mounted ? theme === "dark" : false;
 
   const points = [
     { x: 0, y: 80 },
@@ -145,7 +152,14 @@ function LineChart() {
 
 function DonutChart() {
   const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Prevent hydration mismatch by using consistent values until mounted
+  const isDark = mounted ? theme === "dark" : false;
   const radius = 40;
   const circumference = 2 * Math.PI * radius;
   const strokeDasharray = `${circumference * 0.7} ${circumference}`;
