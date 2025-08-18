@@ -4,12 +4,13 @@ import { useUser } from "@clerk/nextjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   DeleteFileDetails,
+  DeleteMultipleFileDetails,
   FetchUser,
   getFileDetails,
   UpdateFileName,
   UpdatePassword,
 } from "@/services/service";
-import { File, ImageIcon, Search, Filter } from "lucide-react";
+import { File, ImageIcon, Search, Filter, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 import React, { useState } from "react";
@@ -32,6 +33,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const FileDisplayPage = () => {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -39,6 +41,7 @@ const FileDisplayPage = () => {
   const queryClient = useQueryClient();
 
   const [selectedFileUrl, setSelectedFileUrl] = useState<string | null>(null);
+  const [selectedFileIds, setSelectedFileIds] = useState<string[]>([]);
   const [renameFileId, setRenameFileId] = useState<string | null>(null);
   const [newFileName, setNewFileName] = useState<string>("");
   const [password, setPassword] = useState<string | null>(null);
@@ -77,6 +80,25 @@ const FileDisplayPage = () => {
         action: {
           label: "Retry",
           onClick: () => deleteMutation.mutate(fileUrl),
+        },
+      });
+    },
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: DeleteMultipleFileDetails,
+    onSuccess: () => {
+      toast.success(`${selectedFileIds.length} file(s) deleted successfully`);
+      queryClient.invalidateQueries({ queryKey: ["files", clerkId] });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      setSelectedFileIds([]);
+    },
+    onError: (err) => {
+      toast.error("Failed to delete files", {
+        description: (err as Error).message || "Something went wrong",
+        action: {
+          label: "Retry",
+          onClick: () => bulkDeleteMutation.mutate(selectedFileIds),
         },
       });
     },
@@ -126,6 +148,32 @@ const FileDisplayPage = () => {
     if (renameFileId && newFileName.trim()) {
       renameMutation.mutate({ _id: renameFileId, fileName: newFileName });
     }
+  };
+
+  const handleFileSelect = (fileId: string) => {
+    setSelectedFileIds((prev) =>
+      prev.includes(fileId)
+        ? prev.filter((id) => id !== fileId)
+        : [...prev, fileId]
+    );
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedFileIds(
+        filteredFiles?.map((file: FileDetails) => file._id) || []
+      );
+    } else {
+      setSelectedFileIds([]);
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedFileIds.length === 0) {
+      toast.error("Please select at least one file to delete.");
+      return;
+    }
+    bulkDeleteMutation.mutate(selectedFileIds);
   };
 
   let filteredFiles = data?.files?.filter((file: FileDetails) =>
@@ -266,6 +314,44 @@ const FileDisplayPage = () => {
           usagePercent={usagePercent}
           max_storage_size={max_storage_size}
         />
+
+        {/* Bulk Actions */}
+        {filteredFiles && filteredFiles.length > 0 && (
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between p-4 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-3">
+              <Checkbox
+                id="select-all"
+                checked={selectedFileIds.length === filteredFiles.length && filteredFiles.length > 0}
+                onCheckedChange={handleSelectAll}
+              />
+              <label
+                htmlFor="select-all"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Select all ({filteredFiles.length})
+              </label>
+            </div>
+            <div className="flex items-center gap-3">
+              {selectedFileIds.length > 0 && (
+                <>
+                  <span className="text-sm text-muted-foreground">
+                    {selectedFileIds.length} selected
+                  </span>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleBulkDelete}
+                    disabled={bulkDeleteMutation.isPending}
+                    className="gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    {bulkDeleteMutation.isPending ? "Deleting..." : "Delete Selected"}
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {filteredFiles?.length === 0 ? (
@@ -312,6 +398,9 @@ const FileDisplayPage = () => {
                     setNewFileName={setNewFileName}
                     setSelectedFileUrl={setSelectedFileUrl}
                     setPassword={setPassword}
+                    showCheckbox={true}
+                    isSelected={selectedFileIds.includes(file._id)}
+                    onFileSelect={handleFileSelect}
                   />
                 ))}
               </div>
@@ -327,6 +416,9 @@ const FileDisplayPage = () => {
                     setNewFileName={setNewFileName}
                     setSelectedFileUrl={setSelectedFileUrl}
                     setPassword={setPassword}
+                    showCheckbox={true}
+                    isSelected={selectedFileIds.includes(file._id)}
+                    onFileSelect={handleFileSelect}
                   />
                 ))}
               </div>

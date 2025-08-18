@@ -71,6 +71,17 @@ export const DeleteFileDetails = async (id: string) => {
     }
   }
 };
+
+export const DeleteMultipleFileDetails = async (ids: string[]) => {
+  try {
+    await api.delete("/api/deletefiles", { data: { ids } });
+  } catch (err) {
+    if (err instanceof Error) {
+      console.log("Error while Deleting Multiple File Details", err.message);
+      throw err;
+    }
+  }
+};
 export interface UpdateFileNameData {
   _id: string;
   fileName: string;

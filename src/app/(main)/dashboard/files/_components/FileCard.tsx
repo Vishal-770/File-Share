@@ -17,6 +17,7 @@ import {
 
 import { Download, Eye, Lock, Pencil, Trash2, QrCode } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import React, { useState } from "react";
 import ShareDialog from "./ShareDialog";
 import { handleDownload } from "@/utils/functions";
@@ -32,6 +33,9 @@ const FileCard = ({
   setNewFileName,
   setSelectedFileUrl,
   setPassword,
+  isSelected = false,
+  onFileSelect,
+  showCheckbox = false,
 }: {
   file: FileDetails;
   getFileIcon: (fileType: string) => React.ReactNode;
@@ -40,6 +44,9 @@ const FileCard = ({
   setNewFileName: (name: string) => void;
   setSelectedFileUrl: (url: string) => void;
   setPassword: (password: string) => void;
+  isSelected?: boolean;
+  onFileSelect?: (fileId: string) => void;
+  showCheckbox?: boolean;
 }) => {
   const [qrCodeDialog, setQrCodeDialog] = useState<boolean>(false);
   console.log(file);
@@ -49,6 +56,12 @@ const FileCard = ({
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
+              {showCheckbox && (
+                <Checkbox
+                  checked={isSelected}
+                  onCheckedChange={() => onFileSelect?.(file._id)}
+                />
+              )}
               {getFileIcon(file.fileType)}
               <CardTitle className="text-sm font-medium line-clamp-1 truncate w-30">
                 {file.fileName}
