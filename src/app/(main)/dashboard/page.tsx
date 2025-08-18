@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { supabase } from "@/database/supabase/supabase";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { FetchUser, UploadFileDetails } from "@/services/service";
 import Image from "next/image";
@@ -42,23 +42,36 @@ const Dashboard = () => {
     incomingFiles.forEach((file) => {
       if (file.size > maxSize) {
         errors.push(
-          `${file.name} is too large! Max allowed size is ${(maxSize / 1024 / 1024).toFixed(
+          `${file.name} is too large! Max allowed size is ${(
+            maxSize /
+            1024 /
+            1024
+          ).toFixed(
             2
           )} MB. File size is ${(file.size / 1024 / 1024).toFixed(2)} MB.`
         );
       } else {
-        validFiles.push(file);
+        if (!files.includes(file)) validFiles.push(file);
       }
     });
 
+    // Update error message based on current validation
     if (errors.length > 0) {
       setErrmsg(errors.join("\n"));
     } else {
+      // Clear error message if no new errors and we have valid files
       setErrmsg("");
     }
 
-    setFiles(validFiles);
+    setFiles([...files, ...validFiles]);
   };
+
+  // Clear error message when files are removed
+  useEffect(() => {
+    if (files.length === 0) {
+      setErrmsg("");
+    }
+  }, [files.length]);
 
   const UploadAllFiles = async () => {
     if (!files.length || !clerkId) {
@@ -67,7 +80,9 @@ const Dashboard = () => {
     }
 
     // Check storage space
-    if (userData?.user?.current_storage_size > userData?.user.max_storage_size) {
+    if (
+      userData?.user?.current_storage_size > userData?.user.max_storage_size
+    ) {
       toast.error("Storage Full");
       return;
     }
@@ -78,11 +93,11 @@ const Dashboard = () => {
     const totalFiles = files.length;
     let completedFiles = 0;
     let successfulUploads = 0;
-    
+
     for (const file of files) {
       try {
         const filePath = `fileuploads/${Date.now()}-${file.name}`;
-        
+
         // Upload to Supabase
         const { data, error } = await supabase.storage
           .from("uploads")
@@ -114,19 +129,20 @@ const Dashboard = () => {
         });
 
         successfulUploads++;
-        
       } catch (err) {
         console.error(`Error uploading ${file.name}:`, err);
         toast.error(`Failed to upload ${file.name}`);
       }
-      
+
       completedFiles++;
       setProgress((completedFiles / totalFiles) * 100);
     }
 
     // Show results
     if (successfulUploads === totalFiles) {
-      toast.success(`Successfully uploaded ${successfulUploads} file${successfulUploads > 1 ? 's' : ''}`);
+      toast.success(
+        `Successfully uploaded ${successfulUploads} file${successfulUploads > 1 ? "s" : ""}`
+      );
     } else if (successfulUploads > 0) {
       toast.warning(`Uploaded ${successfulUploads} of ${totalFiles} files`);
     } else {
@@ -135,6 +151,7 @@ const Dashboard = () => {
 
     queryClient.invalidateQueries({ queryKey: ["user"] });
     setFiles([]);
+    setErrmsg(""); // Clear any existing error messages after upload
     setIsUploading(false);
     setProgress(0);
   };
@@ -180,7 +197,7 @@ const Dashboard = () => {
 
       {/* Upload section */}
       <div className="w-full">
-        <FileUpload 
+        <FileUpload
           onChange={ValidateFiles}
           resetKey={files.length === 0 ? "reset" : ""}
         />
@@ -200,7 +217,7 @@ const Dashboard = () => {
         <div className="w-full max-w-md mx-auto space-y-2">
           <Progress value={progress} />
           <p className="text-center text-sm text-muted-foreground">
-            Uploading {files.length} file{files.length > 1 ? 's' : ''}...
+            Uploading {files.length} file{files.length > 1 ? "s" : ""}...
           </p>
         </div>
       )}
@@ -212,10 +229,9 @@ const Dashboard = () => {
           size="lg"
           className="w-full max-w-xs"
         >
-          {isUploading 
-            ? "Uploading..." 
-            : `Upload ${files.length} File${files.length !== 1 ? 's' : ''}`
-          }
+          {isUploading
+            ? "Uploading..."
+            : `Upload ${files.length} File${files.length !== 1 ? "s" : ""}`}
         </Button>
       </div>
     </div>

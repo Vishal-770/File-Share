@@ -36,7 +36,7 @@ const SingleFilePreview = ({
 
       <button
         onClick={onRemove}
-        className="text-red-500 hover:text-red-700 transition"
+        className="text-red-500 hover:text-red-700 transition cursor-pointer"
         title="Remove file"
       >
         <X />
@@ -72,7 +72,7 @@ const FilePreview = ({
           Total: {formatBytes(totalSize)}
         </p>
       </div>
-      
+
       <div className="space-y-2 max-h-60 overflow-y-auto">
         {files.map((file, index) => (
           <SingleFilePreview
