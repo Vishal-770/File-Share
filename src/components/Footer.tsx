@@ -125,9 +125,9 @@ export default function Footer() {
                 }`}
                 style={{ transitionDelay: `${(categoryIndex + 2) * 150}ms` }}
               >
-                <h3 className="text-sm font-bold text-foreground uppercase tracking-widest relative group">
+                <h3 className="text-sm font-bold text-foreground uppercase tracking-widest relative group hover:text-foreground/70 cursor-pointer" >
                   {category}
-                  <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
+                  {/* <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" /> */}
                 </h3>
                 <ul className="space-y-3">
                   {links.map((link, linkIndex) => (
