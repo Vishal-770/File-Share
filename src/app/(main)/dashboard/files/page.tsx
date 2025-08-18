@@ -19,7 +19,7 @@ import StorageBar from "../_components/StorageBar";
 import DeleteDialog from "./_components/DeleteDialog";
 import RenameDialog from "./_components/RenameDialog";
 import PasswordChangeDialog from "./_components/PasswordChangeDialog";
-import { Skeleton } from "@/components/ui/skeleton";
+
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import FileCard from "./_components/FileCard";
@@ -34,6 +34,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import BulkDeleteDialog from "./_components/BulkDeleteDialog";
+import FilePageLoading from "./_components/FilePageLoading";
+import FilePageError from "./_components/FilePageError";
 
 const FileDisplayPage = () => {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -49,6 +52,7 @@ const FileDisplayPage = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [fileType, setFileType] = useState<string>("All");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["files", clerkId],
@@ -86,19 +90,23 @@ const FileDisplayPage = () => {
   });
 
   const bulkDeleteMutation = useMutation({
-    mutationFn: DeleteMultipleFileDetails,
-    onSuccess: () => {
-      toast.success(`${selectedFileIds.length} file(s) deleted successfully`);
+    mutationFn: (ids: string[]) => DeleteMultipleFileDetails(ids),
+    onSuccess: (_data, variables) => {
+      // variables is the array of ids actually deleted
+      toast.success(`${variables.length} file(s) deleted successfully`);
       queryClient.invalidateQueries({ queryKey: ["files", clerkId] });
       queryClient.invalidateQueries({ queryKey: ["user"] });
-      setSelectedFileIds([]);
+      // remove only those ids from selection (in case some remained selected purposely)
+      setSelectedFileIds((prev) =>
+        prev.filter((id) => !variables.includes(id))
+      );
     },
-    onError: (err) => {
+    onError: (err, _vars) => {
       toast.error("Failed to delete files", {
         description: (err as Error).message || "Something went wrong",
         action: {
           label: "Retry",
-          onClick: () => bulkDeleteMutation.mutate(selectedFileIds),
+          onClick: () => bulkDeleteMutation.mutate(_vars || []),
         },
       });
     },
@@ -173,7 +181,7 @@ const FileDisplayPage = () => {
       toast.error("Please select at least one file to delete.");
       return;
     }
-    bulkDeleteMutation.mutate(selectedFileIds);
+    setShowBulkDeleteDialog(true);
   };
 
   let filteredFiles = data?.files?.filter((file: FileDetails) =>
@@ -187,54 +195,11 @@ const FileDisplayPage = () => {
   }
 
   if (!isLoaded || isLoading || isLoadingUser) {
-    return (
-      <div className="flex flex-col gap-6 p-4 md:p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-4 w-64" />
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-            <Skeleton className="h-10 w-full sm:w-64" />
-            <Skeleton className="h-10 w-40" />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {[...Array(8)].map((_, i) => (
-            <Skeleton key={i} className="h-64 rounded-xl" />
-          ))}
-        </div>
-      </div>
-    );
+    return <FilePageLoading />;
   }
 
   if (error || userError) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] gap-4 text-center p-6">
-        <Image
-          src="/error.svg"
-          alt="Error"
-          width={200}
-          height={200}
-          className="opacity-80"
-        />
-        <h2 className="text-2xl font-bold text-red-500">
-          Failed to fetch files
-        </h2>
-        <p className="text-muted-foreground max-w-md">
-          We couldn&#39;t load your files. Please check your connection and try
-          again.
-        </p>
-        <Button
-          variant="outline"
-          onClick={() =>
-            queryClient.refetchQueries({ queryKey: ["files", clerkId] })
-          }
-        >
-          Retry
-        </Button>
-      </div>
-    );
+    return <FilePageError queryClient={queryClient} clerkId={clerkId!} />;
   }
 
   const { current_storage_size, max_storage_size } = userData.user;
@@ -274,7 +239,6 @@ const FileDisplayPage = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 w-full md:w-80"
-              
             />
           </div>
 
@@ -321,7 +285,10 @@ const FileDisplayPage = () => {
             <div className="flex items-center gap-3">
               <Checkbox
                 id="select-all"
-                checked={selectedFileIds.length === filteredFiles.length && filteredFiles.length > 0}
+                checked={
+                  selectedFileIds.length === filteredFiles.length &&
+                  filteredFiles.length > 0
+                }
                 onCheckedChange={handleSelectAll}
               />
               <label
@@ -345,7 +312,9 @@ const FileDisplayPage = () => {
                     className="gap-2"
                   >
                     <Trash2 className="w-4 h-4" />
-                    {bulkDeleteMutation.isPending ? "Deleting..." : "Delete Selected"}
+                    {bulkDeleteMutation.isPending
+                      ? "Deleting..."
+                      : "Delete Selected"}
                   </Button>
                 </>
               )}
@@ -453,6 +422,23 @@ const FileDisplayPage = () => {
         setPassword={setPassword}
         handleUpdatePassword={handleUpdatePassword}
         passwordMutation={passwordMutation}
+      />
+
+      {/* Bulk Delete Dialog */}
+      <BulkDeleteDialog
+        open={showBulkDeleteDialog}
+        onOpenChange={setShowBulkDeleteDialog}
+        files={(filteredFiles || []).filter((f: FileDetails) =>
+          selectedFileIds.includes(f._id)
+        )}
+        isDeleting={bulkDeleteMutation.isPending}
+        onConfirm={(finalIds) => {
+          bulkDeleteMutation.mutate(finalIds, {
+            onSuccess: () => {
+              setShowBulkDeleteDialog(false);
+            },
+          });
+        }}
       />
     </div>
   );
