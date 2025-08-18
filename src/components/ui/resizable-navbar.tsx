@@ -101,9 +101,11 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
         stiffness: 200,
         damping: 50,
       }}
-      style={{
-        minWidth: "800px",
-      }}
+      style={
+        {
+          // Removed forced minWidth to avoid horizontal overflow on smaller viewports
+        }
+      }
       className={cn(
         "relative z-[9998] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full bg-transparent px-4 py-2 lg:flex dark:bg-transparent",
         visible &&

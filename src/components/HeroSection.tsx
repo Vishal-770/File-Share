@@ -289,9 +289,9 @@ export default function FileDropLanding() {
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="w-full bg-background text-foreground flex flex-col overflow-hidden">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/10 py-20 px-4 sm:px-6 lg:px-8">
+      <section className="relative min-h-[calc(100vh-72px)] flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/10 px-4 sm:px-6 lg:px-8 pt-24 pb-16">
         {/* Animated background particles */}
         <div className="absolute inset-0 overflow-hidden">
           {dotsPositions.map((dot, i) => (
@@ -455,7 +455,7 @@ export default function FileDropLanding() {
       </section>
 
       {/* Feature Marquee */}
-      <section className="py-12 bg-muted/50">
+      <section className="py-12 bg-muted/50 overflow-hidden">
         <Marquee className="py-4">
           {[
             "🔒 End-to-End Encryption",
@@ -479,7 +479,7 @@ export default function FileDropLanding() {
       </section>
 
       {/* Feature Grid */}
-      <section className="py-20 lg:py-32">
+      <section className="py-20 lg:py-32 overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -524,7 +524,7 @@ export default function FileDropLanding() {
       </section>
 
       {/* Analytics Panel */}
-      <section className="py-20 lg:py-32 bg-gradient-to-br from-muted/30 to-primary/5">
+      <section className="py-20 lg:py-32 bg-gradient-to-br from-muted/30 to-primary/5 overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -614,7 +614,7 @@ export default function FileDropLanding() {
       </section>
 
       {/* Partner Logos */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-16 bg-muted/30 overflow-hidden">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0 }}
@@ -647,7 +647,7 @@ export default function FileDropLanding() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 lg:py-32">
+      <section className="py-20 lg:py-32 overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -715,7 +715,7 @@ export default function FileDropLanding() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 lg:py-32 bg-gradient-to-r from-primary to-primary/70">
+      <section className="py-20 lg:py-32 bg-gradient-to-r from-primary to-primary/70 overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
