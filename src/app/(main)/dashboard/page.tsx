@@ -1,12 +1,12 @@
 "use client";
 
 import FilePreview from "@/components/FilePreview";
-import FileUpload from "@/components/FileUpload";
+import { FileUpload } from "@/components/ui/file-upload";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { supabase } from "@/database/supabase/supabase";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { FetchUser, UploadFileDetails } from "@/services/service";
 import Image from "next/image";
@@ -14,7 +14,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import StorageBar from "./_components/StorageBar";
 
 const Dashboard = () => {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [errmsg, setErrmsg] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -32,28 +32,54 @@ const Dashboard = () => {
     enabled: isLoaded && isSignedIn,
   });
 
-  const UploadFile = (file: File) => {
+  const ValidateFiles = (incomingFiles: File[]) => {
     if (!userData?.user?.max_file_upload_size) return;
 
     const maxSize = userData.user.max_file_upload_size;
-    if (file && file.size > maxSize) {
-      setErrmsg(
-        `File too large! Max allowed size is ${(maxSize / 1024 / 1024).toFixed(
-          2
-        )} MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)} MB.`
-      );
-      setFile(null);
+    const validFiles: File[] = [];
+    const errors: string[] = [];
+
+    incomingFiles.forEach((file) => {
+      if (file.size > maxSize) {
+        errors.push(
+          `${file.name} is too large! Max allowed size is ${(
+            maxSize /
+            1024 /
+            1024
+          ).toFixed(
+            2
+          )} MB. File size is ${(file.size / 1024 / 1024).toFixed(2)} MB.`
+        );
+      } else {
+        if (!files.includes(file)) validFiles.push(file);
+      }
+    });
+
+    // Update error message based on current validation
+    if (errors.length > 0) {
+      setErrmsg(errors.join("\n"));
     } else {
+      // Clear error message if no new errors and we have valid files
       setErrmsg("");
-      setFile(file);
     }
+
+    setFiles([...files, ...validFiles]);
   };
 
-  const UploadButtonClicked = async () => {
-    if (!file || !clerkId) {
-      toast.error("User not authenticated or file not selected");
+  // Clear error message when files are removed
+  useEffect(() => {
+    if (files.length === 0) {
+      setErrmsg("");
+    }
+  }, [files.length]);
+
+  const UploadAllFiles = async () => {
+    if (!files.length || !clerkId) {
+      toast.error("User not authenticated or no files selected");
       return;
     }
+
+    // Check storage space
     if (
       userData?.user?.current_storage_size > userData?.user.max_storage_size
     ) {
@@ -64,46 +90,70 @@ const Dashboard = () => {
     setIsUploading(true);
     setProgress(0);
 
-    const filePath = `fileuploads/${Date.now()}-${file.name}`;
-    const { data, error } = await supabase.storage
-      .from("uploads")
-      .upload(filePath, file, {
-        cacheControl: "3600",
-        upsert: false,
-      });
+    const totalFiles = files.length;
+    let completedFiles = 0;
+    let successfulUploads = 0;
 
-    if (error) {
-      toast("Upload Failed", {
-        description: error.message,
-        action: {
-          label: "Retry",
-          onClick: () => UploadButtonClicked(),
-        },
-      });
-      setIsUploading(false);
-      return;
+    for (const file of files) {
+      try {
+        const filePath = `fileuploads/${Date.now()}-${file.name}`;
+
+        // Upload to Supabase
+        const { data, error } = await supabase.storage
+          .from("uploads")
+          .upload(filePath, file, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (error) {
+          toast.error(`Upload failed for ${file.name}`, {
+            description: error.message,
+          });
+          continue;
+        }
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from("uploads")
+          .getPublicUrl(filePath);
+
+        // Save file details to database
+        await UploadFileDetails({
+          clerkId,
+          fileName: file.name ?? data.id,
+          fileType: file?.type ?? "unknown",
+          fileUrl: urlData?.publicUrl ?? "unknown",
+          size: file?.size ?? 0,
+          filePath,
+        });
+
+        successfulUploads++;
+      } catch (err) {
+        console.error(`Error uploading ${file.name}:`, err);
+        toast.error(`Failed to upload ${file.name}`);
+      }
+
+      completedFiles++;
+      setProgress((completedFiles / totalFiles) * 100);
     }
 
-    const { data: urlData } = supabase.storage
-      .from("uploads")
-      .getPublicUrl(filePath);
+    // Show results
+    if (successfulUploads === totalFiles) {
+      toast.success(
+        `Successfully uploaded ${successfulUploads} file${successfulUploads > 1 ? "s" : ""}`
+      );
+    } else if (successfulUploads > 0) {
+      toast.warning(`Uploaded ${successfulUploads} of ${totalFiles} files`);
+    } else {
+      toast.error("Failed to upload any files");
+    }
 
-    await UploadFileDetails({
-      clerkId,
-      fileName: file.name ?? data.id,
-      fileType: file?.type ?? "unknown",
-      fileUrl: urlData?.publicUrl ?? "unknown",
-      size: file?.size ?? 0,
-      filePath,
-    });
-
-    toast("Upload Successful", {
-      description: "File successfully uploaded",
-    });
     queryClient.invalidateQueries({ queryKey: ["user"] });
-
-    setFile(null);
+    setFiles([]);
+    setErrmsg(""); // Clear any existing error messages after upload
     setIsUploading(false);
+    setProgress(0);
   };
 
   if (error) {
@@ -147,36 +197,41 @@ const Dashboard = () => {
 
       {/* Upload section */}
       <div className="w-full">
-        <FileUpload setFile={UploadFile} />
+        <FileUpload
+          onChange={ValidateFiles}
+          resetKey={files.length === 0 ? "reset" : ""}
+        />
       </div>
 
       {errmsg && (
         <div className="w-full flex justify-center">
-          <p className="text-red-500 font-medium bg-red-50 px-4 py-2 rounded-md max-w-md text-center">
+          <p className="text-red-500 font-medium bg-red-50 px-4 py-2 rounded-md max-w-md text-center whitespace-pre-line">
             {errmsg}
           </p>
         </div>
       )}
 
-      {file && <FilePreview file={file} setfile={setFile} />}
+      {files.length > 0 && <FilePreview files={files} setFiles={setFiles} />}
 
       {isUploading && (
         <div className="w-full max-w-md mx-auto space-y-2">
           <Progress value={progress} />
           <p className="text-center text-sm text-muted-foreground">
-            Uploading your file...
+            Uploading {files.length} file{files.length > 1 ? "s" : ""}...
           </p>
         </div>
       )}
 
       <div className="flex justify-center pt-2">
         <Button
-          onClick={UploadButtonClicked}
-          disabled={!file || isUploading}
+          onClick={UploadAllFiles}
+          disabled={!files.length || isUploading}
           size="lg"
           className="w-full max-w-xs"
         >
-          {isUploading ? "Uploading..." : "Upload File"}
+          {isUploading
+            ? "Uploading..."
+            : `Upload ${files.length} File${files.length !== 1 ? "s" : ""}`}
         </Button>
       </div>
     </div>

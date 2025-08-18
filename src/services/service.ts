@@ -31,6 +31,22 @@ export const UploadFileDetails = async (data: FileDetails) => {
     }
   }
 };
+
+export const UploadMultipleFileDetails = async (files: FileDetails[]) => {
+  const results = [];
+  for (const fileData of files) {
+    try {
+      await api.post("/api/uploadfile", fileData);
+      results.push({ success: true, fileName: fileData.fileName });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.log(`Error Uploading File Data to MongoDb: ${fileData.fileName}`);
+        results.push({ success: false, fileName: fileData.fileName, error: err.message });
+      }
+    }
+  }
+  return results;
+};
 export const getFileDetails = async (clerkId: string) => {
   try {
     const res = await api.get(`/api/getfiles?id=${clerkId}`);
