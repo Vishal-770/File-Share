@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import {
   DialogDescription,
   DialogHeader,
@@ -13,10 +14,11 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import FileDetails from "@/types/FileType";
 const ShareDialog = ({ file }: { file: FileDetails }) => {
+  const [copied, setCopied] = useState<boolean>(false);
   return (
-    <Dialog>
+    <Dialog onOpenChange={() => setCopied(false)}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="cursor-pointer">
           <Share2 className="w-4 h-4 mr-1" />
         </Button>
       </DialogTrigger>
@@ -35,10 +37,13 @@ const ShareDialog = ({ file }: { file: FileDetails }) => {
             id={`share-link-${file._id}`}
           />
           <Button
+            disabled={copied}
             type="button"
+            className="cursor-pointer"
             onClick={() => {
               const url = `${process.env.NEXT_PUBLIC_BASE_URL}/share?fileId=${file.fileId}`;
               navigator.clipboard.writeText(url);
+              setCopied(true);
               toast.success("Link copied to clipboard!");
             }}
           >

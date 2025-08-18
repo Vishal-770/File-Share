@@ -56,7 +56,7 @@ const FileCard = ({
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 cursor-pointer">
                   <span className="sr-only">Open menu</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -77,12 +77,13 @@ const FileCard = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem
+                  className="cursor-pointer"
                   onClick={() => handleDownload(file.fileUrl, file.fileName)}
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Download
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="cursor-pointer">
                   <a
                     href={file.fileUrl}
                     target="_blank"
@@ -93,6 +94,7 @@ const FileCard = ({
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem
+                  className="cursor-pointer"
                   onClick={() => {
                     setRenameFileId(file._id);
                     setNewFileName(file.fileName);
@@ -102,6 +104,7 @@ const FileCard = ({
                   Rename
                 </DropdownMenuItem>
                 <DropdownMenuItem
+                  className="cursor-pointer"
                   onClick={() => {
                     setPassword("");
                     setPasswordFileUrl(file.fileUrl);
@@ -111,7 +114,7 @@ const FileCard = ({
                   {file.password ? "Change Password" : "Set Password"}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  className="text-red-500 focus:text-red-500"
+                  className="text-red-500 focus:text-red-500 cursor-pointer"
                   onClick={() => setSelectedFileUrl(file._id)}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
@@ -143,16 +146,17 @@ const FileCard = ({
         <CardFooter className="flex justify-between pt-0">
           <div className="flex items-center gap-2">
             <ShareDialog file={file} />
-            <Button
+            <Button 
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="h-8 w-8 cursor-pointer"
               onClick={() => setQrCodeDialog(true)}
             >
               <QrCode className="w-4 h-4" />
             </Button>
           </div>
           <Button
+            className="cursor-pointer"
             variant="outline"
             size="sm"
             onClick={() => handleDownload(file.fileUrl, file.fileName)}
