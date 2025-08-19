@@ -1,6 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
+import JSZip from "jszip";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   DeleteFileDetails,
@@ -10,7 +11,14 @@ import {
   UpdateFileName,
   UpdatePassword,
 } from "@/services/service";
-import { File, ImageIcon, Search, Filter, Trash2 } from "lucide-react";
+import {
+  File,
+  ImageIcon,
+  Search,
+  Filter,
+  Trash2,
+  Download,
+} from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 import React, { useState } from "react";
@@ -35,6 +43,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import BulkDeleteDialog from "./_components/BulkDeleteDialog";
+import BulkDownloadDialog from "./_components/BulkDownloadDialog";
 import FilePageLoading from "./_components/FilePageLoading";
 import FilePageError from "./_components/FilePageError";
 
@@ -53,6 +62,8 @@ const FileDisplayPage = () => {
   const [fileType, setFileType] = useState<string>("All");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [showBulkDownloadDialog, setShowBulkDownloadDialog] = useState(false);
+  const [isBulkDownloading, setIsBulkDownloading] = useState(false);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["files", clerkId],
@@ -184,6 +195,82 @@ const FileDisplayPage = () => {
     setShowBulkDeleteDialog(true);
   };
 
+  const handleBulkDownload = () => {
+    if (selectedFileIds.length === 0) {
+      toast.error("Please select at least one file to download.");
+      return;
+    }
+    setShowBulkDownloadDialog(true);
+  };
+
+  const multiDownload = async (ids: string[], asZip: boolean) => {
+    if (!ids.length) return;
+    setIsBulkDownloading(true);
+    try {
+      if (asZip) {
+        const zip = new JSZip();
+        let added = 0;
+        for (const id of ids) {
+          const file = data?.files?.find((f: FileDetails) => f._id === id);
+          if (!file) continue;
+          try {
+            const res = await fetch(file.fileUrl);
+            if (!res.ok) throw new Error("Failed to fetch file");
+            const blob = await res.blob();
+            // Ensure unique names inside zip
+            const baseName = file.fileName || `file-${id}`;
+            const existing = zip.file(baseName);
+            const name = existing ? `${Date.now()}-${baseName}` : baseName;
+            zip.file(name, blob);
+            added++;
+          } catch (err) {
+            console.error("Zip add failed for", file?.fileName, err);
+          }
+        }
+        if (added === 0) {
+          toast.error("No files added to zip (all failed)");
+        } else {
+          const zipBlob = await zip.generateAsync({ type: "blob" });
+          const url = URL.createObjectURL(zipBlob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `files-${added}.zip`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          toast.success(`Downloaded zip with ${added} file(s)`);
+        }
+      } else {
+        let success = 0;
+        for (const id of ids) {
+          const file = data?.files?.find((f: FileDetails) => f._id === id);
+          if (!file) continue;
+          try {
+            const response = await fetch(file.fileUrl);
+            if (!response.ok) throw new Error("File download failed");
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = blobUrl;
+            link.download = file.fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(blobUrl);
+            success += 1;
+          } catch (err) {
+            console.error("Download failed for", file?.fileName, err);
+          }
+        }
+        toast.success(`Downloaded ${success} file(s)`);
+      }
+    } finally {
+      setIsBulkDownloading(false);
+      setShowBulkDownloadDialog(false);
+    }
+  };
+
   let filteredFiles = data?.files?.filter((file: FileDetails) =>
     file.fileName.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -304,6 +391,15 @@ const FileDisplayPage = () => {
                   <span className="text-sm text-muted-foreground">
                     {selectedFileIds.length} selected
                   </span>
+                  <Button
+                    size="sm"
+                    onClick={handleBulkDownload}
+                    disabled={isBulkDownloading}
+                    className="gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    {isBulkDownloading ? "Downloading..." : "Download"}
+                  </Button>
                   <Button
                     variant="destructive"
                     size="sm"
@@ -439,6 +535,16 @@ const FileDisplayPage = () => {
             },
           });
         }}
+      />
+
+      <BulkDownloadDialog
+        open={showBulkDownloadDialog}
+        onOpenChange={setShowBulkDownloadDialog}
+        files={(filteredFiles || []).filter((f: FileDetails) =>
+          selectedFileIds.includes(f._id)
+        )}
+        isDownloading={isBulkDownloading}
+        onConfirm={(finalIds, asZip) => multiDownload(finalIds, asZip)}
       />
     </div>
   );

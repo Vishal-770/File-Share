@@ -72,7 +72,7 @@ const TeamPage = () => {
       },
       {
         onSuccess: () => {
-          toast.success("✅ Team created successfully");
+          toast.success("Team created successfully");
           queryClient.invalidateQueries({ queryKey: ["user"] });
           refetch();
           reset();
@@ -80,7 +80,7 @@ const TeamPage = () => {
           window.location.reload();
         },
         onError: (err) => {
-          toast.error(`❌ Error creating team: ${err.message}`);
+          toast.error(`Error creating team: ${err.message}`);
         },
       }
     );
@@ -151,7 +151,7 @@ const TeamPage = () => {
         {/* Create Team Dialog */}
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button>Create New Team</Button>
+            <Button className="cursor-pointer">Create New Team</Button>
           </DialogTrigger>
 
           <DialogContent className="sm:max-w-[500px]">
@@ -186,9 +186,9 @@ const TeamPage = () => {
 
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button variant="outline">Cancel</Button>
+                  <Button variant="outline" className="cursor-pointer">Cancel</Button>
                 </DialogClose>
-                <Button type="submit" disabled={CreateTeamMutation.isPending}>
+                <Button type="submit" className="cursor-pointer" disabled={CreateTeamMutation.isPending}>
                   {CreateTeamMutation.isPending ? "Creating..." : "Create Team"}
                 </Button>
               </DialogFooter>
@@ -199,7 +199,7 @@ const TeamPage = () => {
         {/* Join Team Dialog */}
         <Dialog open={joinOpen} onOpenChange={setJoinOpen}>
           <DialogTrigger asChild>
-            <Button variant="secondary">Join Team</Button>
+            <Button variant="secondary" className="cursor-pointer">Join Team</Button>
           </DialogTrigger>
 
           <DialogContent className="sm:max-w-[500px]">
@@ -228,9 +228,9 @@ const TeamPage = () => {
 
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button variant="outline">Cancel</Button>
+                  <Button variant="outline" className="cursor-pointer">Cancel</Button>
                 </DialogClose>
-                <Button type="submit" disabled={JoinTeamMutation.isPending}>
+                <Button className="cursor-pointer" type="submit" disabled={JoinTeamMutation.isPending}>
                   {JoinTeamMutation.isPending ? "Joining..." : "Join Team"}
                 </Button>
               </DialogFooter>

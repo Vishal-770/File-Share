@@ -1,0 +1,13 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "install-jszip",
+			"type": "shell",
+			"command": "npm install jszip @types/jszip",
+			"args": [],
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

@@ -36,6 +36,8 @@ import {
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import React, { useState } from "react";
+import TeamBulkDownloadDialog from "../_components/TeamBulkDownloadDialog";
+import TeamBulkDeleteDialog from "../_components/TeamBulkDeleteDialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { handleDownload } from "@/utils/functions";
 import {
@@ -62,8 +64,14 @@ const TeamDetail = () => {
   const [showSidebar, setShowSidebar] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogOpen1, setDialogOpen1] = useState(false);
-  const [selectedFileIds, setSelectedFileIds] = useState<string[]>([]);
+  // Selection of personal (user) files to add into team
+  const [selectedUserFileIds, setSelectedUserFileIds] = useState<string[]>([]);
+  // Selection of existing team files for bulk actions (download / delete)
+  const [selectedTeamFileIds, setSelectedTeamFileIds] = useState<string[]>([]);
   const [fileToDelete, setFileToDelete] = useState<FileItem | null>(null);
+  const [showBulkDownload, setShowBulkDownload] = useState(false);
+  const [showBulkDelete, setShowBulkDelete] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
   const {
     data: teamData,
@@ -90,12 +98,12 @@ const TeamDetail = () => {
     mutationFn: async () =>
       UploadFilesToTeam({
         teamId: teamData.teamId,
-        fileIds: selectedFileIds,
+  fileIds: selectedUserFileIds,
       }),
     onSuccess: () => {
       toast.success("Files added to team successfully.");
       setDialogOpen(false);
-      setSelectedFileIds([]);
+  setSelectedUserFileIds([]);
       refetch();
     },
     onError: () => {
@@ -123,26 +131,34 @@ const TeamDetail = () => {
       (member: IUsers) => member.clerkId === user?.id
     );
 
-  const handleFileSelect = (fileId: string) => {
-    setSelectedFileIds((prev) =>
+  // Personal files selection handlers (add to team)
+  const handleUserFileSelect = (fileId: string) => {
+    setSelectedUserFileIds((prev) =>
+      prev.includes(fileId)
+        ? prev.filter((id) => id !== fileId)
+        : [...prev, fileId]
+    );
+  };
+  const handleUserSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedUserFileIds(
+        fileData?.files?.map((file: FileItem) => file.fileId) || []
+      );
+    } else {
+      setSelectedUserFileIds([]);
+    }
+  };
+  // Team files selection handlers (bulk actions)
+  const handleTeamFileSelect = (fileId: string) => {
+    setSelectedTeamFileIds((prev) =>
       prev.includes(fileId)
         ? prev.filter((id) => id !== fileId)
         : [...prev, fileId]
     );
   };
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedFileIds(
-        fileData?.files?.map((file: FileItem) => file.fileId) || []
-      );
-    } else {
-      setSelectedFileIds([]);
-    }
-  };
-
   const handleAddFiles = async () => {
-    if (selectedFileIds.length === 0) {
+  if (selectedUserFileIds.length === 0) {
       toast.error("Please select at least one file.");
       return;
     }
@@ -231,6 +247,60 @@ const TeamDetail = () => {
     );
   });
 
+  // Helper: selected team files (intersection)
+  const selectedTeamFiles: FileItem[] =
+    teamData?.files?.filter((f: FileItem) =>
+      selectedTeamFileIds.includes(f.fileId)
+    ) || [];
+  const canUserDelete = (f: FileItem) => f.clerkId === user?.id; // only uploader can delete
+  const deletableSelected = selectedTeamFiles.filter(canUserDelete);
+  const blockedCount = selectedTeamFiles.length - deletableSelected.length;
+
+  const openBulkDownload = () => {
+    if (selectedTeamFiles.length === 0) {
+      toast.error("Select at least one team file.");
+      return;
+    }
+    setShowBulkDownload(true);
+  };
+
+  const openBulkDelete = () => {
+    if (selectedTeamFiles.length === 0) {
+      toast.error("Select at least one team file.");
+      return;
+    }
+    if (deletableSelected.length === 0) {
+      toast.error("You don't have permission to delete the selected files.");
+      return;
+    }
+    setShowBulkDelete(true);
+  };
+
+  const performBulkDelete = async (ids: string[]) => {
+    if (!ids.length) return;
+    setIsBulkDeleting(true);
+    let success = 0;
+    for (const id of ids) {
+      const file = teamData.files.find((f: FileItem) => f.fileId === id);
+      if (!file || !canUserDelete(file)) continue;
+      try {
+        await DelteTeamFile({ fileId: id, teamId: teamId as string });
+        success++;
+      } catch (err) {
+        console.error("Failed deleting", file.fileName, err);
+      }
+    }
+    if (success > 0) {
+      toast.success(`Deleted ${success} file(s)`);
+      refetch();
+    } else {
+      toast.error("No files deleted");
+    }
+    setIsBulkDeleting(false);
+    setShowBulkDelete(false);
+  setSelectedTeamFileIds((prev) => prev.filter((id) => !ids.includes(id)));
+  };
+
   return (
     <div className="flex flex-col md:flex-row h-screen">
       {/* Mobile header */}
@@ -250,7 +320,7 @@ const TeamDetail = () => {
 
       {/* Main content */}
       <div className="flex-1 overflow-y-auto bg-muted/20 p-4 md:p-6">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="space-y-6 w-full h-full">
           <div className="flex justify-between items-center flex-wrap gap-2">
             <h1 className="text-2xl font-bold">
               {teamData?.teamName} Workspace
@@ -314,6 +384,11 @@ const TeamDetail = () => {
                             Download
                           </span>
                         </Button>
+                        <Checkbox
+                          checked={selectedTeamFileIds.includes(file.fileId)}
+                          onCheckedChange={() => handleTeamFileSelect(file.fileId)}
+                          className="h-4 w-4 ml-auto"
+                        />
                         {file.clerkId === user?.id ? (
                           <Button
                             onClick={() => handleDeleteClick(file)}
@@ -351,6 +426,59 @@ const TeamDetail = () => {
                     get started with collaboration.
                   </p>
                   <Button onClick={() => setDialogOpen(true)}>Add Files</Button>
+                </div>
+              )}
+              {teamData?.files?.length > 0 && (
+                <div className="mt-6 flex flex-wrap gap-3 items-center justify-between border-t pt-4">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Checkbox
+                      id="select-team-all"
+                      checked={
+                        selectedTeamFileIds.length === teamData.files.length &&
+                        teamData.files.length > 0
+                      }
+                      onCheckedChange={(checked) =>
+                        checked
+                          ? setSelectedTeamFileIds(
+                              teamData.files.map((f: FileItem) => f.fileId)
+                            )
+                          : setSelectedTeamFileIds([])
+                      }
+                    />
+                    <label htmlFor="select-team-all" className="cursor-pointer">
+                      Select All ({teamData.files.length})
+                    </label>
+                    {selectedTeamFileIds.length > 0 && (
+                      <span className="text-muted-foreground ml-2">
+                        {selectedTeamFileIds.length} selected
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {selectedTeamFiles.length > 0 && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={openBulkDownload}
+                        >
+                          Bulk Download
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={openBulkDelete}
+                          disabled={
+                            isBulkDeleting || deletableSelected.length === 0
+                          }
+                        >
+                          {isBulkDeleting
+                            ? "Deleting..."
+                            : `Bulk Delete${blockedCount > 0 ? ` (${deletableSelected.length} allowed)` : ""}`}
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -472,10 +600,10 @@ const TeamDetail = () => {
                 <Checkbox
                   id="select-all"
                   checked={
-                    selectedFileIds.length === fileData?.files?.length &&
+                    selectedUserFileIds.length === fileData?.files?.length &&
                     fileData?.files?.length > 0
                   }
-                  onCheckedChange={handleSelectAll}
+                  onCheckedChange={handleUserSelectAll}
                 />
                 <label
                   htmlFor="select-all"
@@ -485,7 +613,7 @@ const TeamDetail = () => {
                 </label>
               </div>
               <span className="text-sm text-muted-foreground">
-                {selectedFileIds.length} of {fileData?.files?.length} selected
+                {selectedUserFileIds.length} of {fileData?.files?.length} selected
               </span>
             </div>
 
@@ -495,11 +623,11 @@ const TeamDetail = () => {
                   <div
                     key={file.fileId}
                     className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer"
-                    onClick={() => handleFileSelect(file.fileId)}
+                    onClick={() => handleUserFileSelect(file.fileId)}
                   >
                     <Checkbox
-                      checked={selectedFileIds.includes(file.fileId)}
-                      onCheckedChange={() => handleFileSelect(file.fileId)}
+                      checked={selectedUserFileIds.includes(file.fileId)}
+                      onCheckedChange={() => handleUserFileSelect(file.fileId)}
                       onClick={(e) => e.stopPropagation()}
                     />
                     <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -538,7 +666,8 @@ const TeamDetail = () => {
             <Button
               onClick={handleAddFiles}
               disabled={
-                selectedFileIds.length === 0 || files_not_in_team.length === 0
+                selectedUserFileIds.length === 0 ||
+                files_not_in_team.length === 0
               }
             >
               Add Selected Files
@@ -594,6 +723,30 @@ const TeamDetail = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <TeamBulkDownloadDialog
+        open={showBulkDownload}
+        onOpenChange={setShowBulkDownload}
+        files={selectedTeamFiles.map((f) => ({
+          fileId: f.fileId,
+          fileName: f.fileName,
+          fileUrl: f.fileUrl,
+          fileType: f.fileType,
+        }))}
+        teamName={teamData?.teamName}
+      />
+      <TeamBulkDeleteDialog
+        open={showBulkDelete}
+        onOpenChange={setShowBulkDelete}
+        files={deletableSelected.map((f) => ({
+          fileId: f.fileId,
+          fileName: f.fileName,
+          fileType: f.fileType,
+          fileUrl: f.fileUrl,
+        }))}
+        isDeleting={isBulkDeleting}
+        blockedCount={blockedCount}
+        onConfirm={performBulkDelete}
+      />
     </div>
   );
 };
