@@ -1,48 +1,98 @@
-# File Drop - Secure File Sharing Platform
+<div align="center">
 
-A modern, secure file sharing platform built with Next.js 15, featuring team collaboration, password protection, and public sharing capabilities with custom authentication pages.
+# 📦 File Drop
 
-## ✨ Features
+Secure, collaborative & shareable file management built with Next.js 15 + React 19.
 
-### 🔐 **Secure Authentication**
-- Custom branded login/signup pages with theme support
-- Social authentication (Google, GitHub, etc.)
-- Secure session management with Clerk
-- Proper routing with catch-all authentication routes
+_Personal storage • Teams • Public & password‑protected sharing • Bulk actions • Modern UI_
 
-### 📁 **File Management**
-- Personal file storage and organization
-- Drag & drop file uploads
-- File renaming and deletion
-- Multiple file format support
+</div>
 
-### 👥 **Team Collaboration**
-- Create and manage teams
-- Share files within teams
-- Team member management
-- Collaborative workspaces
+---
 
-### 🔗 **Public Sharing**
-- Public file upload links
-- Password-protected files
-- Temporary file sharing
-- QR code generation for easy sharing
+## ✨ Feature Overview
 
-### 🎨 **Modern UI/UX**
-- Dark/Light mode support with theme-aware authentication
-- Responsive design
-- Beautiful animations with Framer Motion
-- Custom UI components with Radix UI
+### 🔐 Authentication & Security
+- Clerk-powered auth (social + email providers)
+- Custom branded sign-in/sign-up pages (light/dark aware)
+- Protected dashboard (App Router segment isolation)
+- Session + route guards, access control (team leader vs member vs public)
+- Password protection for shared files
+- Webhook ready (user provisioning / future automation)
+
+### 📁 Personal File Management
+- Drag & drop & multi-file uploads
+- File metadata persistence (MongoDB)
+- Rename, delete (single + bulk)
+- Bulk download (individual or single .zip via JSZip)
+- Type filtering, search, grid/list toggle
+- Storage usage bar with quota awareness
+
+### 👥 Team Collaboration
+- Create / join / leave teams
+- Team workspace with full-width adaptive layout
+- Add existing personal files to a team (no duplicate upload)
+- Per-file ownership: only uploader can delete (enforced in bulk + single)
+- Team bulk actions: multi-select download (.zip) & delete (permission-aware)
+- Member roster + leader spotlight
+
+### 🌍 Public & External Sharing
+- Generate public collection links (multi-file public sets)
+- Password protect shared assets
+- Public download page with preview modes
+- Share via email (Resend integration) & (optional) QR generation support
+
+### 📨 Email & Notifications
+- Transactional email template (Resend) for file sharing
+- Toast feedback (success / error / partial outcomes)
+
+### 🧰 Advanced UX Enhancements
+- Hydration-safe animations (randomized visual elements gated to client)
+- Single global scrollbar (no nested scroll jank) with custom theming
+- Accessible dialogs & focus management (Radix primitives)
+- Selection toolbars, select-all toggles, skip indicators inside dialogs
+- Permission feedback (lock icon + tooltip for non-deletable team files)
+
+### 🗃️ Storage & Data
+- File blobs stored via Vercel Blob
+- Metadata in MongoDB (Mongoose models)
+- Optional Supabase client (extensible for analytics/logging)
+
+### 🛡️ Resilience & Validation
+- Progressive bulk operations (loop with per-item try/catch)
+- Partial success toasts (e.g. zip bundling skips failed items)
+- Input sanitation & defensive checks for missing IDs
+
+### 🛠️ Developer Experience
+- TypeScript throughout
+- Modular service layer (`src/services/service.ts`)
+- React Query caching + invalidation
+- Central utility helpers (`src/utils/functions.ts`)
+- Shadcn/UI component system + Tailwind v4
+
+### 🚀 Performance & Future Hooks
+- Turbopack dev server
+- Potential for batch APIs (bulk delete optimization placeholder)
+- Lazy client-only random visuals to avoid hydration mismatch
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: Next.js 15, React 19, TypeScript
-- **Styling**: Tailwind CSS, Shadcn/ui, Lucide Icons
-- **Authentication**: Clerk
-- **Database**: MongoDB, Supabase
-- **File Storage**: Vercel Blob
-- **Email**: Resend
-- **Deployment**: Vercel
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 15 (App Router) |
+| Language | TypeScript / React 19 |
+| Styling | Tailwind CSS v4, Shadcn/UI, custom tokens, Lucide Icons |
+| State/Data | React Query (TanStack) |
+| Auth | Clerk |
+| Storage | Vercel Blob (files), MongoDB (metadata) |
+| Email | Resend |
+| Zip | JSZip |
+| Animations | motion / Framer Motion compatible API |
+| Misc | nanoid, date-fns, qrcode-generator (optional), radix primitives |
+
+---
 
 ## 🏗️ Project Structure
 
@@ -71,6 +121,31 @@ src/
 └── utils/                   # Helper functions
 ```
 
+---
+
+## ⚙️ Environment Variables
+
+| Variable | Purpose |
+|----------|---------|
+| NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY | Clerk public key |
+| CLERK_SECRET_KEY | Clerk server secret |
+| NEXT_PUBLIC_CLERK_SIGN_IN_URL | Sign in route |
+| NEXT_PUBLIC_CLERK_SIGN_UP_URL | Sign up route |
+| NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL | Post-auth redirect |
+| NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL | Post-auth redirect |
+| MONGODB_URL | MongoDB connection string |
+| NEXT_PUBLIC_SUPABASE_URL | Optional Supabase base URL |
+| NEXT_PUBLIC_SUPABASE_ANON_KEY | Supabase client key |
+| BLOB_READ_WRITE_TOKEN | Vercel Blob RW token |
+| RESEND_API_KEY | Resend email key |
+| NEXT_PUBLIC_BASE_URL | Client base URL |
+| BASE_URL | Server base URL |
+| WEBHOOK_SECRET | Webhook signature secret |
+
+> See `.env.local.example` for canonical list.
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -83,7 +158,7 @@ src/
 - Vercel account (for blob storage)
 - Resend account (for emails)
 
-### Installation
+### Installation & Run
 
 1. **Clone the repository**
    ```bash
@@ -135,49 +210,87 @@ src/
    
    Navigate to [http://localhost:3000](http://localhost:3000)
 
-## 📝 Configuration
+## � Authentication Setup
 
-### Authentication Setup
+1. Create a [Clerk](https://clerk.com) application
+2. Configure allowed redirect URLs (local + production)
+3. Set the auth route mappings in env vars
+4. (Optional) Configure webhooks with `WEBHOOK_SECRET`
 
-1. Create a [Clerk](https://clerk.com) account
-2. Set up your application with the following settings:
-   - Sign-in URL: `/sign-in`
-   - Sign-up URL: `/sign-up`
-   - After sign-in URL: `/dashboard`
-   - After sign-up URL: `/dashboard`
+## 🎨 Theming & Customization
 
-## 🎨 Customization
+Modify CSS variables in `src/app/globals.css` (OKLCH palette) and extend utilities with Tailwind config. Component-level variations (buttons, dialogs, nav) derive from tokenized variables for consistency.
 
-### Theme Configuration
+Auth pages are fully customizable under `(auth)` segment.
 
-The app supports light/dark themes. Customize colors in:
-- `src/app/globals.css` - CSS variables
-- `tailwind.config.js` - Tailwind theme
+## 🔒 Security Highlights
 
-### Authentication Styling
+- Clerk-managed sessions & JWT rotation
+- Per-file password gating (optional)
+- Team member vs leader authorization (delete restrictions)
+- Server-side validation in API routes (narrowed inputs)
+- Progressive error handling for bulk ops
 
-Customize Clerk components in:
-- `src/app/(auth)/sign-in/page.tsx`
-- `src/app/(auth)/sign-up/page.tsx`
+## 🔌 API & Service Layer (Selected)
 
-## 🔒 Security Features
+| Action | Function | Endpoint |
+|--------|----------|----------|
+| Upload single file metadata | `UploadFileDetails` | POST `/api/uploadfile` |
+| Upload multiple metadata | `UploadMultipleFileDetails` | POST `/api/uploadfile` (loop client) |
+| List user files | `getFileDetails` | GET `/api/getfiles?id=` |
+| Delete file | `DeleteFileDetails` | DELETE `/api/deletefile?id=` |
+| Bulk delete | `DeleteMultipleFileDetails` | DELETE `/api/deletefiles` |
+| Rename file | `UpdateFileName` | PATCH `/api/rename` |
+| Password update | `UpdatePassword` | PATCH `/api/password` |
+| Send share email | `SendEmail` | POST `/api/sendemail` |
+| Fetch user meta | `FetchUser` | GET `/api/fetchuser?id=` |
+| Create team | `CreateTeam` | POST `/api/createteam` |
+| Fetch teams | `FetchTeams` | POST `/api/fetchteams` |
+| Fetch single team | `FetchTeam` | GET `/api/fetchteam?teamId=` |
+| Join team | `JoinTeam` | PATCH `/api/jointeam` |
+| Leave team | `LeaveTeam` | PATCH `/api/leaveteam` |
+| Add file(s) to team | `UploadFilesToTeam` | POST `/api/uploadfileteam` |
+| Delete team file | `DelteTeamFile` | DELETE `/api/deleteteamfile` |
+| Upload public files | `UploadPublicFiles` | POST `/api/publicFileUpload` |
+| Get public set | `GetPublicFiles` | GET `/api/fetchPublicFiles?uniqueId=` |
 
-- **Authentication**: Secure login with Clerk
-- **File Protection**: Password-protected sharing
-- **Access Control**: Team-based permissions
-- **Data Validation**: Input sanitization and validation
-- **Secure Storage**: Encrypted file storage
+> Batch team deletion endpoint can be added later to optimize loops.
 
-## 🚀 Deployment
+## 🧪 Testing & Quality
 
-### Vercel (Recommended)
+- Type checks: `npm run type-check`
+- Lint: `npm run lint` (Tailwind + ESLint)
+- Build verification: `npm run build`
 
-1. **Connect your repository to Vercel**
-2. **Add environment variables**
-3. **Deploy**
+## 🗺️ Roadmap (Planned / Suggested)
 
-The app will be automatically deployed with optimizations.
+- [ ] Parallelized & throttled downloads with progress UI
+- [ ] Server-side batch delete (team + personal) to reduce N API calls
+- [ ] Zip streaming (avoid memory spikes on very large sets)
+- [ ] File previews (image/pdf/video inline modal)
+- [ ] Role tiers (admin/moderator within teams)
+- [ ] Rate limiting & audit logs
+- [ ] Virtualized large file lists
+- [ ] Activity feed / notifications panel
+
+## 🤝 Contributing
+
+1. Fork + branch (`feat/your-feature`)
+2. Install deps & run dev
+3. Ensure lint & type check pass
+4. Submit PR with concise description / screenshots
+
+## 📄 License
+
+MIT © Your Name
+
+## ❤️ Acknowledgements
+
+- Next.js / Vercel team
+- Clerk authentication platform
+- Shadcn/UI & Radix primitives
+- Resend for transactional email
 
 ---
 
-Built with ❤️ using Next.js and modern web technologies
+Built with passion using modern web technologies.
