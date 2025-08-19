@@ -29,7 +29,6 @@ import RenameDialog from "./_components/RenameDialog";
 import PasswordChangeDialog from "./_components/PasswordChangeDialog";
 
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import FileCard from "./_components/FileCard";
 import {
   Select,
@@ -450,7 +449,7 @@ const FileDisplayPage = () => {
             </Badge>
           </div>
 
-          <ScrollArea className="h-full">
+          <div>
             {viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
                 {filteredFiles?.map((file: FileDetails) => (
@@ -488,7 +487,7 @@ const FileDisplayPage = () => {
                 ))}
               </div>
             )}
-          </ScrollArea>
+          </div>
         </>
       )}
 

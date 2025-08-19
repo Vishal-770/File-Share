@@ -132,6 +132,116 @@ body {
   overflow-x: hidden; /* centralize horizontal clipping */
 }
 
+/* ===== Professional Scrollbar (Global) ===== */
+/* Base (light) */
+html,
+body,
+.scroll-root {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: hsl(var(--muted-foreground) / 0.35) transparent;
+}
+
+/* WebKit */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+.scroll-root::-webkit-scrollbar,
+.scrollbar-thin::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+.scroll-root::-webkit-scrollbar-track,
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+.scroll-root::-webkit-scrollbar-thumb,
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    hsl(var(--muted-foreground) / 0.35),
+    hsl(var(--muted-foreground) / 0.55)
+  );
+  border-radius: 999px;
+  border: 2px solid hsl(var(--background));
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover,
+.scroll-root::-webkit-scrollbar-thumb:hover,
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    hsl(var(--muted-foreground) / 0.55),
+    hsl(var(--muted-foreground) / 0.75)
+  );
+}
+
+/* Dark mode refinement */
+.dark html,
+.dark body,
+.dark .scroll-root {
+  scrollbar-color: hsl(var(--muted-foreground) / 0.45) transparent;
+}
+.dark html::-webkit-scrollbar-thumb,
+.dark body::-webkit-scrollbar-thumb,
+.dark .scroll-root::-webkit-scrollbar-thumb,
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    hsl(var(--muted-foreground) / 0.45),
+    hsl(var(--muted-foreground) / 0.65)
+  );
+  border: 2px solid hsl(var(--background));
+}
+.dark html::-webkit-scrollbar-thumb:hover,
+.dark body::-webkit-scrollbar-thumb:hover,
+.dark .scroll-root::-webkit-scrollbar-thumb:hover,
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    hsl(var(--muted-foreground) / 0.6),
+    hsl(var(--muted-foreground) / 0.8)
+  );
+}
+
+/* Utility class for any scrollable container */
+.pro-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.35) transparent;
+}
+.pro-scroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.pro-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pro-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.45);
+  border-radius: 999px;
+  border: 2px solid hsl(var(--background));
+}
+.pro-scroll::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.65);
+}
+.dark .pro-scroll {
+  scrollbar-color: hsl(var(--muted-foreground) / 0.45) transparent;
+}
+.dark .pro-scroll::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.55);
+}
+.dark .pro-scroll::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.75);
+}
+
 /* Grid background pattern for auth pages */
 .bg-grid-white\/\[0\.05\] {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgba(255,255,255,0.05)'%3e%3cpath d='m0 .5h32m-32 32v-32'/%3e%3c/svg%3e");

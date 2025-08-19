@@ -98,12 +98,12 @@ const TeamDetail = () => {
     mutationFn: async () =>
       UploadFilesToTeam({
         teamId: teamData.teamId,
-  fileIds: selectedUserFileIds,
+        fileIds: selectedUserFileIds,
       }),
     onSuccess: () => {
       toast.success("Files added to team successfully.");
       setDialogOpen(false);
-  setSelectedUserFileIds([]);
+      setSelectedUserFileIds([]);
       refetch();
     },
     onError: () => {
@@ -158,7 +158,7 @@ const TeamDetail = () => {
   };
 
   const handleAddFiles = async () => {
-  if (selectedUserFileIds.length === 0) {
+    if (selectedUserFileIds.length === 0) {
       toast.error("Please select at least one file.");
       return;
     }
@@ -298,11 +298,11 @@ const TeamDetail = () => {
     }
     setIsBulkDeleting(false);
     setShowBulkDelete(false);
-  setSelectedTeamFileIds((prev) => prev.filter((id) => !ids.includes(id)));
+    setSelectedTeamFileIds((prev) => prev.filter((id) => !ids.includes(id)));
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-screen">
+    <div className="flex flex-col md:flex-row min-h-screen">
       {/* Mobile header */}
       <div className="flex justify-between items-center p-4 md:hidden border-b bg-background z-40">
         <Button variant="ghost" onClick={() => router.back()} size="sm">
@@ -319,7 +319,7 @@ const TeamDetail = () => {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 overflow-y-auto bg-muted/20 p-4 md:p-6">
+      <div className="flex-1 bg-muted/20 p-4 md:p-6">
         <div className="space-y-6 w-full h-full">
           <div className="flex justify-between items-center flex-wrap gap-2">
             <h1 className="text-2xl font-bold">
@@ -386,7 +386,9 @@ const TeamDetail = () => {
                         </Button>
                         <Checkbox
                           checked={selectedTeamFileIds.includes(file.fileId)}
-                          onCheckedChange={() => handleTeamFileSelect(file.fileId)}
+                          onCheckedChange={() =>
+                            handleTeamFileSelect(file.fileId)
+                          }
                           className="h-4 w-4 ml-auto"
                         />
                         {file.clerkId === user?.id ? (
@@ -488,7 +490,7 @@ const TeamDetail = () => {
 
       {/* Sidebar */}
       <div
-        className={`w-full md:w-80 h-full overflow-y-auto border-l transition-transform duration-300 ease-in-out bg-background fixed md:relative top-0 right-0 z-50 md:translate-x-0 ${
+        className={`w-full md:w-80 h-full border-l transition-transform duration-300 ease-in-out bg-background fixed md:relative top-0 right-0 z-50 md:translate-x-0 ${
           showSidebar ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -613,7 +615,8 @@ const TeamDetail = () => {
                 </label>
               </div>
               <span className="text-sm text-muted-foreground">
-                {selectedUserFileIds.length} of {fileData?.files?.length} selected
+                {selectedUserFileIds.length} of {fileData?.files?.length}{" "}
+                selected
               </span>
             </div>
 
