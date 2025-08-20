@@ -5,7 +5,19 @@ import { useUser } from "@clerk/nextjs";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
 import { FetchUser } from "@/services/service";
 import Image from "next/image";
 import { Users, HardDrive, Upload, FileText } from "lucide-react";
@@ -35,11 +47,11 @@ interface ProfileData {
 
 const COLORS = {
   Documents: "#8884d8",
-  Images: "#82ca9d", 
+  Images: "#82ca9d",
   Videos: "#ffc658",
   Archives: "#ff7c7c",
   Audio: "#8dd1e1",
-  Others: "#d084d0"
+  Others: "#d084d0",
 };
 
 const Profile = () => {
@@ -55,20 +67,18 @@ const Profile = () => {
     enabled: isLoaded && isSignedIn,
   });
 
-  const {
-    data: profileData,
-    isLoading: isProfileLoading,
-  } = useQuery<ProfileData>({
-    queryKey: ["profile", user?.id],
-    queryFn: async () => {
-      const response = await fetch(`/api/profile?id=${user?.id}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch profile data");
-      }
-      return response.json();
-    },
-    enabled: isLoaded && isSignedIn && !!user?.id,
-  });
+  const { data: profileData, isLoading: isProfileLoading } =
+    useQuery<ProfileData>({
+      queryKey: ["profile", user?.id],
+      queryFn: async () => {
+        const response = await fetch(`/api/profile?id=${user?.id}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch profile data");
+        }
+        return response.json();
+      },
+      enabled: isLoaded && isSignedIn && !!user?.id,
+    });
 
   if (isLoading || isProfileLoading || !isLoaded) {
     return (
@@ -100,19 +110,21 @@ const Profile = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  const pieData = profileData?.fileStats?.filesByType?.map(item => ({
-    name: item.type,
-    value: item.size,
-    count: item.count,
-    color: COLORS[item.type as keyof typeof COLORS] || COLORS.Others
-  })) || [];
+  const pieData =
+    profileData?.fileStats?.filesByType?.map((item) => ({
+      name: item.type,
+      value: item.size,
+      count: item.count,
+      color: COLORS[item.type as keyof typeof COLORS] || COLORS.Others,
+    })) || [];
 
-  const barData = profileData?.fileStats?.filesByType?.map(item => ({
-    type: item.type,
-    size: Number((item.size / (1024 * 1024)).toFixed(2)), // Convert to MB
-    count: item.count
-  })) || [];
-
+  const barData =
+    profileData?.fileStats?.filesByType?.map((item) => ({
+      type: item.type,
+      size: Number((item.size / (1024 * 1024)).toFixed(2)), // Convert to MB
+      count: item.count,
+    })) || [];
+  console.log(profileData);
   return (
     <div className="h-full w-full p-6 max-w-7xl mx-auto">
       <div className="space-y-6">
@@ -137,9 +149,7 @@ const Profile = () => {
               <div className="text-2xl font-bold">
                 {profileData?.fileStats?.totalFiles || 0}
               </div>
-              <p className="text-xs text-muted-foreground">
-                Files uploaded
-              </p>
+              <p className="text-xs text-muted-foreground">Files uploaded</p>
             </CardContent>
           </Card>
 
@@ -150,17 +160,17 @@ const Profile = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {userDetails.teams?.length || 0}
+                {profileData?.user.teams.length || 0}
               </div>
-              <p className="text-xs text-muted-foreground">
-                Teams joined
-              </p>
+              <p className="text-xs text-muted-foreground">Teams joined</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Storage Used</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Storage Used
+              </CardTitle>
               <HardDrive className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -175,16 +185,16 @@ const Profile = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Upload Limit</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Upload Limit
+              </CardTitle>
               <Upload className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
                 {formatBytes(userDetails.max_file_upload_size)}
               </div>
-              <p className="text-xs text-muted-foreground">
-                Per file limit
-              </p>
+              <p className="text-xs text-muted-foreground">Per file limit</p>
             </CardContent>
           </Card>
         </div>
@@ -195,7 +205,10 @@ const Profile = () => {
             <CardTitle>Storage Usage</CardTitle>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>{formatBytes(userDetails.current_storage_size)} of {formatBytes(userDetails.max_storage_size)} used</span>
+                <span>
+                  {formatBytes(userDetails.current_storage_size)} of{" "}
+                  {formatBytes(userDetails.max_storage_size)} used
+                </span>
                 <span>{usagePercent.toFixed(1)}%</span>
               </div>
               <Progress value={usagePercent} className="w-full" />
@@ -221,7 +234,9 @@ const Profile = () => {
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(value) => formatBytes(Number(value))} />
+                      <Tooltip
+                        formatter={(value) => formatBytes(Number(value))}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
                 ) : (
@@ -256,34 +271,44 @@ const Profile = () => {
         </Card>
 
         {/* File Type Breakdown */}
-        {profileData?.fileStats?.filesByType && profileData.fileStats.filesByType.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>File Type Breakdown</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {profileData.fileStats.filesByType.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div 
-                        className="w-4 h-4 rounded-full" 
-                        style={{ backgroundColor: COLORS[item.type as keyof typeof COLORS] || COLORS.Others }}
-                      />
-                      <div>
-                        <p className="font-medium">{item.type}</p>
-                        <p className="text-sm text-muted-foreground">{item.count} files</p>
+        {profileData?.fileStats?.filesByType &&
+          profileData.fileStats.filesByType.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>File Type Breakdown</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {profileData.fileStats.filesByType.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div
+                          className="w-4 h-4 rounded-full"
+                          style={{
+                            backgroundColor:
+                              COLORS[item.type as keyof typeof COLORS] ||
+                              COLORS.Others,
+                          }}
+                        />
+                        <div>
+                          <p className="font-medium">{item.type}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {item.count} files
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">{formatBytes(item.size)}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-medium">{formatBytes(item.size)}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
       </div>
     </div>
   );
