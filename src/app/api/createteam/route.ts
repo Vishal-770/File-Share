@@ -7,8 +7,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const body: CreateTeam = await req.json();
-    const { teamName, teamDescription, clerkId } = body;
+    interface CreateTeamBody extends CreateTeam {
+      isPublic?: boolean;
+    }
+    const body: CreateTeamBody = await req.json();
+    const { teamName, teamDescription, clerkId, isPublic } = body;
 
     if (!teamName || !teamDescription || !clerkId) {
       return NextResponse.json(
@@ -40,6 +43,7 @@ export async function POST(req: NextRequest) {
       teamId,
       teamName,
       teamDescription,
+      isPublic: typeof isPublic === "boolean" ? isPublic : false,
       teamLeader: user._id,
       teamMembers: [],
       files: [],

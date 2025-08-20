@@ -321,10 +321,48 @@ const TeamDetail = () => {
       {/* Main content */}
       <div className="flex-1 bg-muted/20 p-4 md:p-6">
         <div className="space-y-6 w-full h-full">
-          <div className="flex justify-between items-center flex-wrap gap-2">
-            <h1 className="text-2xl font-bold">
-              {teamData?.teamName} Workspace
-            </h1>
+          <div className="flex justify-between items-center flex-wrap gap-4">
+            <div className="flex flex-col gap-1">
+              <h1 className="text-2xl font-bold">
+                {teamData?.teamName} Workspace
+              </h1>
+              {user?.id === teamData?.teamLeader?.clerkId && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">Public:</span>
+                  <input
+                    type="checkbox"
+                    checked={!!teamData?.isPublic}
+                    onChange={async (e) => {
+                      const next = e.target.checked;
+                      try {
+                        const res = await fetch("/api/toggle-team-publicity", {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            teamId: teamData.teamId,
+                            clerkId: user?.id,
+                            isPublic: next,
+                          }),
+                        });
+                        const data = await res.json();
+                        if (!data.success)
+                          throw new Error(data.message || "Failed");
+                        toast.success(
+                          `Team is now ${next ? "Public" : "Private"}`
+                        );
+                        refetch();
+                      } catch (err) {
+                        toast.error((err as Error).message || "Toggle failed");
+                      }
+                    }}
+                    className="h-4 w-4 cursor-pointer"
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    {teamData?.isPublic ? "Visible in Public Teams" : "Hidden"}
+                  </span>
+                </div>
+              )}
+            </div>
             <Button onClick={() => setDialogOpen(true)}>Add Files</Button>
           </div>
           <Card>

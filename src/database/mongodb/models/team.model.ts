@@ -4,7 +4,7 @@ export interface Iteam extends Document {
   teamName: string;
   teamDescription: string;
   teamId: string;
-  allowAccess: boolean;
+  isPublic: boolean;
   teamLeader: mongoose.Types.ObjectId;
   teamMembers: mongoose.Types.ObjectId[];
   files: mongoose.Types.ObjectId[];
@@ -24,9 +24,10 @@ const TeamSchema = new Schema<Iteam>({
     default: "Description Not Set ",
   },
 
-  allowAccess: {
+  isPublic: {
     type: Boolean,
     default: false,
+    index: true,
   },
   teamLeader: {
     type: Schema.Types.ObjectId,

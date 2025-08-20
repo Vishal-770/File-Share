@@ -51,6 +51,11 @@ const collaborationItems = [
     url: "/dashboard/teams",
     icon: Users,
   },
+  {
+    title: "Public Teams",
+    url: "/dashboard/public-teams",
+    icon: Users,
+  },
 ];
 
 const accountItems = [

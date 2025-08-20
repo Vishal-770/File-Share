@@ -138,7 +138,7 @@ export default function SignInPage() {
                   appearance={{
                     variables: {
                       colorPrimary: "hsl(var(--primary))",
-                      colorText: "hsl(var(--foreground))",
+                      colorText: "var(--foreground)",
                       colorTextSecondary: "hsl(var(--muted-foreground))",
                       colorBackground: "hsl(var(--background))",
                       colorInputText: "hsl(var(--foreground))",

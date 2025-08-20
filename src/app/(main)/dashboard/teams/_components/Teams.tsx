@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { DeleteTeam, FetchTeams, LeaveTeam } from "@/services/service";
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +26,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+interface ToggleBody {
+  teamId: string;
+  clerkId: string;
+  isPublic: boolean;
+}
+
 interface TeamLeader {
   first_name: string;
   last_name: string;
@@ -39,16 +45,68 @@ export interface Team {
   teamDescription: string;
   teamId: string;
   teamLeader: TeamLeader | null;
+  isPublic: boolean;
 }
 
 const Teams = ({ teamIds, userId }: { teamIds: string[]; userId: string }) => {
   const [openDialogId, setOpenDialogId] = useState<string | null>(null);
   const [leaveDialogId, setLeaveDialogId] = useState<string | null>(null);
   const [copiedTeamId, setCopiedTeamId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const router = useRouter();
   const { data, isLoading, isError, refetch } = useQuery<{ data: Team[] }>({
-    queryKey: ["teams"],
+    queryKey: ["teams", teamIds],
     queryFn: () => FetchTeams(teamIds),
+  });
+
+  const { mutate: togglePublic } = useMutation({
+    mutationFn: async ({ teamId, clerkId, isPublic }: ToggleBody) => {
+      const res = await fetch("/api/toggle-team-publicity", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ teamId, clerkId, isPublic }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.message || "Failed");
+      return json.team as Team;
+    },
+    onMutate: async (vars) => {
+      setTogglingId(vars.teamId);
+      await queryClient.cancelQueries({ queryKey: ["teams", teamIds] });
+      const previous = queryClient.getQueryData<{ data: Team[] }>([
+        "teams",
+        teamIds,
+      ]);
+      if (previous) {
+        const optimistic: { data: Team[] } = {
+          data: previous.data.map((t) =>
+            t.teamId === vars.teamId ? { ...t, isPublic: vars.isPublic } : t
+          ),
+        };
+        queryClient.setQueryData(["teams", teamIds], optimistic);
+      }
+      return { previous };
+    },
+    onError: (err, _vars, ctx) => {
+      if (ctx?.previous)
+        queryClient.setQueryData(["teams", teamIds], ctx.previous);
+      toast.error((err as Error).message || "Toggle failed");
+    },
+    onSuccess: (updated) => {
+      toast.success(`Team set ${updated.isPublic ? "Public" : "Private"}`);
+      queryClient.setQueryData<{ data: Team[] }>(["teams", teamIds], (old) => {
+        if (!old) return { data: [updated] };
+        return {
+          data: old.data.map((t) =>
+            t.teamId === updated.teamId
+              ? { ...t, isPublic: updated.isPublic }
+              : t
+          ),
+        };
+      });
+    },
+    onSettled: () => setTogglingId(null),
   });
 
   const { mutate: deleteTeam, isPending: isDeleting } = useMutation({
@@ -144,9 +202,51 @@ const Teams = ({ teamIds, userId }: { teamIds: string[]; userId: string }) => {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
                 <Users className="w-5 h-5 text-primary" />
-                <CardTitle className="text-lg font-semibold">
-                  {team.teamName}
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                  <span>{team.teamName}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded border uppercase tracking-wide ${
+                      team.isPublic
+                        ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
+                        : "bg-zinc-500/10 text-zinc-600 border-zinc-500/30"
+                    }`}
+                  >
+                    {team.isPublic ? "Public" : "Private"}
+                  </span>
                 </CardTitle>
+                {isLeader && (
+                  <button
+                    type="button"
+                    aria-label={
+                      team.isPublic ? "Set team private" : "Set team public"
+                    }
+                    disabled={togglingId === team.teamId}
+                    onClick={() =>
+                      togglePublic({
+                        teamId: team.teamId,
+                        clerkId: userId,
+                        isPublic: !team.isPublic,
+                      })
+                    }
+                    className={`ml-auto inline-flex items-center h-6 w-11 rounded-full transition-colors relative focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                      team.isPublic ? "bg-emerald-500/70" : "bg-zinc-500/40"
+                    } ${togglingId === team.teamId ? "opacity-60" : ""}`}
+                  >
+                    <span
+                      className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform flex items-center justify-center text-[9px] font-medium ${
+                        team.isPublic ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    >
+                      {togglingId === team.teamId ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : team.isPublic ? (
+                        "On"
+                      ) : (
+                        "Off"
+                      )}
+                    </span>
+                  </button>
+                )}
               </div>
               <div className="flex items-center gap-2 mt-1">
                 <p className="text-xs text-muted-foreground">
