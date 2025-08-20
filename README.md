@@ -6,6 +6,8 @@ Secure, collaborative & shareable file management built with Next.js 15 + React 
 
 _Personal storage • Teams • Public & password‑protected sharing • Bulk actions • Modern UI_
 
+🔗 **Live Deployment:** https://file-share-topaz-kappa.vercel.app/
+
 </div>
 
 ---
@@ -64,6 +66,18 @@ _Personal storage • Teams • Public & password‑protected sharing • Bulk a
 - Input sanitation & defensive checks for missing IDs
 
 ### 🛠️ Developer Experience
+
+### 📊 Analytics & Insights (New)
+- Profile dashboard with storage usage progress
+- Recharts-based visualizations (pie + bar) for file type distribution
+- File type breakdown cards with color legend
+- Per-user storage & upload limit surfaced
+
+### 🌐 Public Teams Directory (New)
+- Dedicated Public Teams page with search & membership state
+- Team leader toggle (card-level) to switch Public / Private instantly (optimistic update)
+- Badge + switch UI for visibility state
+- Join flow with disabled state + feedback toasts
 - TypeScript throughout
 - Modular service layer (`src/services/service.ts`)
 - React Query caching + invalidation
@@ -210,7 +224,7 @@ src/
    
    Navigate to [http://localhost:3000](http://localhost:3000)
 
-## � Authentication Setup
+## 🔑 Authentication Setup
 
 1. Create a [Clerk](https://clerk.com) application
 2. Configure allowed redirect URLs (local + production)
@@ -265,6 +279,8 @@ Auth pages are fully customizable under `(auth)` segment.
 ## 🗺️ Roadmap (Planned / Suggested)
 
 - [ ] Parallelized & throttled downloads with progress UI
+- [ ] Public team discovery filters (members count, recently active)
+- [ ] Profile export (CSV of file inventory)
 - [ ] Server-side batch delete (team + personal) to reduce N API calls
 - [ ] Zip streaming (avoid memory spikes on very large sets)
 - [ ] File previews (image/pdf/video inline modal)
@@ -294,3 +310,5 @@ MIT © Your Name
 ---
 
 Built with passion using modern web technologies.
+
+> Have an idea or found an issue? Open a discussion / PR — contributions welcome!

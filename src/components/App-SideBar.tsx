@@ -7,6 +7,7 @@ import {
   Users,
   FileText,
   User,
+  Globe2,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -55,7 +56,7 @@ const collaborationItems = [
   {
     title: "Public Teams",
     url: "/dashboard/public-teams",
-    icon: Users,
+    icon: Globe2,
   },
 ];
 
