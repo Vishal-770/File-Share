@@ -6,6 +6,7 @@ import {
   Wallet,
   Users,
   FileText,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -54,6 +55,11 @@ const collaborationItems = [
 ];
 
 const accountItems = [
+  {
+    title: "Profile",
+    url: "/dashboard/profile",
+    icon: User,
+  },
   {
     title: "Upgrade",
     url: "/dashboard/Pricing",
