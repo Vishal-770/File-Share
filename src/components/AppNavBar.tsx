@@ -5,7 +5,7 @@ import { ModeToggle } from "./ModeToggle";
 
 const AppNavBar = () => {
   return (
-    <header className="w-full bg-background border-b shadow-sm px-4 py-2">
+    <header className="  w-full bg-background border-b shadow-sm px-4 py-2">
       <div className=" mx-auto flex items-center justify-between">
         {/* Left: Sidebar / Logo */}
         <div className="flex items-center gap-3">

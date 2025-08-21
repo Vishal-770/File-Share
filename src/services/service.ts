@@ -40,8 +40,14 @@ export const UploadMultipleFileDetails = async (files: FileDetails[]) => {
       results.push({ success: true, fileName: fileData.fileName });
     } catch (err: unknown) {
       if (err instanceof Error) {
-        console.log(`Error Uploading File Data to MongoDb: ${fileData.fileName}`);
-        results.push({ success: false, fileName: fileData.fileName, error: err.message });
+        console.log(
+          `Error Uploading File Data to MongoDb: ${fileData.fileName}`
+        );
+        results.push({
+          success: false,
+          fileName: fileData.fileName,
+          error: err.message,
+        });
       }
     }
   }
@@ -209,12 +215,18 @@ export const FetchTeam = async (teamId: string) => {
 export const UploadFilesToTeam = async ({
   teamId,
   fileIds,
+  clerkId,
 }: {
   teamId: string;
   fileIds: string[];
+  clerkId: string;
 }) => {
   try {
-    const res = await axios.post("/api/uploadfileteam", { teamId, fileIds });
+    const res = await axios.post("/api/uploadfileteam", {
+      teamId,
+      fileIds,
+      clerkId,
+    });
     return res.data;
   } catch (error) {
     console.error("Error uploading file to team:", error);
@@ -225,12 +237,14 @@ export const UploadFilesToTeam = async ({
 export const DelteTeamFile = async ({
   fileId,
   teamId,
+  clerkId,
 }: {
   fileId: string;
   teamId: string;
+  clerkId: string;
 }) => {
   const res = await api.delete("/api/deleteteamfile", {
-    params: { fileId, teamId },
+    params: { fileId, teamId, clerkId },
   });
   console.log(res);
 };

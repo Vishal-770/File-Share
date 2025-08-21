@@ -1,6 +1,7 @@
 import dbConnect from "@/database/mongodb/dbConnect";
 import FileModel from "@/database/mongodb/models/file.model";
 import Team from "@/database/mongodb/models/team.model";
+import { logTeamActivity } from "@/utils/teamActivityLogger";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(req: NextRequest) {
@@ -10,10 +11,14 @@ export async function DELETE(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const teamId = searchParams.get("teamId");
     const fileId = searchParams.get("fileId");
+    const clerkId = searchParams.get("clerkId");
 
-    if (!teamId || !fileId) {
+    if (!teamId || !fileId || !clerkId) {
       return NextResponse.json(
-        { message: "teamId and fileId are required.", success: false },
+        {
+          message: "teamId, fileId, and clerkId are required.",
+          success: false,
+        },
         { status: 400 }
       );
     }
@@ -40,6 +45,19 @@ export async function DELETE(req: NextRequest) {
         { status: 404 }
       );
     }
+
+    // Log the delete activity
+    await logTeamActivity({
+      teamId,
+      clerkId,
+      action: "deleted",
+      fileId: file.fileId,
+      fileName: file.fileName,
+      metadata: {
+        fileSize: file.size,
+        fileType: file.fileType,
+      },
+    });
 
     return NextResponse.json(
       { message: "File removed from team successfully.", success: true },

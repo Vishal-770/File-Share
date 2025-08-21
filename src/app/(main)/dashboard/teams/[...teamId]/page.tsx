@@ -45,6 +45,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import TeamActivityLogs from "@/components/TeamActivityLogs";
 
 interface FileItem {
   _id: string;
@@ -99,6 +100,7 @@ const TeamDetail = () => {
       UploadFilesToTeam({
         teamId: teamData.teamId,
         fileIds: selectedUserFileIds,
+        clerkId: clerkId!,
       }),
     onSuccess: () => {
       toast.success("Files added to team successfully.");
@@ -112,7 +114,8 @@ const TeamDetail = () => {
   });
 
   const DeleteFileMutation = useMutation({
-    mutationFn: DelteTeamFile,
+    mutationFn: ({ fileId, teamId }: { fileId: string; teamId: string }) =>
+      DelteTeamFile({ fileId, teamId, clerkId: clerkId! }),
     onSuccess: () => {
       toast.success("File deleted successfully");
       setDialogOpen1(false);
@@ -146,6 +149,29 @@ const TeamDetail = () => {
       );
     } else {
       setSelectedUserFileIds([]);
+    }
+  };
+
+  // Team download handler with logging
+  const handleTeamFileDownload = async (file: FileItem) => {
+    try {
+      // Download the file
+      await handleDownload(file.fileUrl, file.fileName);
+
+      // Log the download activity
+      await fetch("/api/log-download", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          teamId,
+          clerkId: user?.id,
+          fileId: file.fileId,
+          fileName: file.fileName,
+          fileType: file.fileType,
+        }),
+      });
+    } catch (error) {
+      console.error("Error downloading file:", error);
     }
   };
   // Team files selection handlers (bulk actions)
@@ -284,7 +310,11 @@ const TeamDetail = () => {
       const file = teamData.files.find((f: FileItem) => f.fileId === id);
       if (!file || !canUserDelete(file)) continue;
       try {
-        await DelteTeamFile({ fileId: id, teamId: teamId as string });
+        await DelteTeamFile({
+          fileId: id,
+          teamId: teamId as string,
+          clerkId: clerkId!,
+        });
         success++;
       } catch (err) {
         console.error("Failed deleting", file.fileName, err);
@@ -363,7 +393,10 @@ const TeamDetail = () => {
                 </div>
               )}
             </div>
-            <Button onClick={() => setDialogOpen(true)}>Add Files</Button>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button onClick={() => setDialogOpen(true)}>Add Files</Button>
+              <TeamActivityLogs teamId={teamData?.teamId} />
+            </div>
           </div>
           <Card>
             <CardHeader>
@@ -410,9 +443,7 @@ const TeamDetail = () => {
                           </Button>
                         </a>
                         <Button
-                          onClick={() =>
-                            handleDownload(file.fileUrl, file.fileName)
-                          }
+                          onClick={() => handleTeamFileDownload(file)}
                           variant="outline"
                           size="sm"
                           className="gap-1.5 text-xs h-8"
@@ -774,6 +805,8 @@ const TeamDetail = () => {
           fileType: f.fileType,
         }))}
         teamName={teamData?.teamName}
+        teamId={teamId as string}
+        clerkId={clerkId}
       />
       <TeamBulkDeleteDialog
         open={showBulkDelete}

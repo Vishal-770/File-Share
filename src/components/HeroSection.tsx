@@ -11,18 +11,23 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Upload,
-  Share2,
   Users,
-  Folder,
-  Zap,
-  Eye,
-  Lock,
   Star,
   ArrowRight,
   FileText,
-  ImageIcon,
   Video,
-  Music,
+  Shield,
+  Cloud,
+  Download,
+  Globe2,
+  UserPlus,
+  Settings,
+  BarChart3,
+  Archive,
+  Mail,
+  QrCode,
+  Smartphone,
+  Search,
 } from "lucide-react";
 import Link from "next/link";
 import Footer from "@/components/Footer";
@@ -57,39 +62,6 @@ function AnimatedCounter({
   }, [end, duration]);
 
   return <span>{count.toLocaleString()}</span>;
-}
-
-// Marquee Component
-function Marquee({
-  children,
-  className = "",
-  reverse = false,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  reverse?: boolean;
-}) {
-  return (
-    <div className={`flex overflow-hidden ${className}`}>
-      <motion.div
-        className="flex gap-4 whitespace-nowrap"
-        animate={{
-          x: reverse ? [0, -1000] : [-1000, 0],
-        }}
-        transition={{
-          x: {
-            repeat: Number.POSITIVE_INFINITY,
-            repeatType: "loop",
-            duration: 20,
-            ease: "linear",
-          },
-        }}
-      >
-        {children}
-        {children}
-      </motion.div>
-    </div>
-  );
 }
 
 // Chart Components
@@ -197,58 +169,109 @@ function DonutChart() {
 }
 
 export default function FileDropLanding() {
-  // const { theme } = useTheme();
   const [dotsPositions, setDotsPositions] = useState<
     { left: number; top: number; duration: number; delay: number }[]
   >([]);
 
   // Generate random positions on client side only to prevent hydration mismatch
   useEffect(() => {
-    const positions = [...Array(20)].map(() => ({
+    const positions = [...Array(50)].map(() => ({
       left: Math.random() * 100,
       top: Math.random() * 100,
-      duration: 3 + Math.random() * 2,
+      duration: 4 + Math.random() * 3,
       delay: Math.random() * 2,
     }));
     setDotsPositions(positions);
   }, []);
 
-  const features = [
+  const mainFeatures = [
     {
-      icon: Folder,
-      title: "File Management",
+      icon: Upload,
+      title: "Drag & Drop Upload",
       description:
-        "Organize, search, and manage your files with intelligent categorization and tagging.",
+        "Upload multiple files instantly with our intuitive drag & drop interface. Support for all file types with real-time progress tracking.",
+      color: "bg-primary/10 text-primary",
     },
     {
       icon: Users,
       title: "Team Collaboration",
       description:
-        "Work together seamlessly with real-time editing, comments, and version control.",
+        "Create teams, add members, and collaborate in real-time. Share files within teams with granular permission controls.",
+      color: "bg-secondary/10 text-secondary",
     },
     {
-      icon: Share2,
+      icon: Globe2,
       title: "Public Sharing",
       description:
-        "Share files publicly with customizable permissions and expiration dates.",
+        "Share files publicly with password protection, expiration dates, and QR codes for easy access on any device.",
+      color: "bg-accent/10 text-accent",
     },
     {
-      icon: Lock,
-      title: "Password Protection",
+      icon: Shield,
+      title: "Enterprise Security",
       description:
-        "Secure your sensitive files with advanced encryption and password protection.",
+        "End-to-end encryption, password protection, and secure file storage with Clerk authentication integration.",
+      color: "bg-primary/10 text-primary",
+    },
+  ];
+
+  const advancedFeatures = [
+    {
+      icon: Archive,
+      title: "Bulk Operations",
+      description:
+        "Select multiple files and perform bulk downloads as ZIP archives or bulk deletions with confirmation dialogs.",
     },
     {
-      icon: Zap,
-      title: "Real-Time Sync",
+      icon: BarChart3,
+      title: "Analytics Dashboard",
       description:
-        "Keep your files synchronized across all devices with lightning-fast updates.",
+        "Track storage usage, file type distribution, and team activity with beautiful charts and insights.",
     },
     {
-      icon: Eye,
-      title: "File Previews",
+      icon: QrCode,
+      title: "QR Code Sharing",
       description:
-        "Preview documents, images, and videos without downloading them first.",
+        "Generate QR codes for instant file sharing. Perfect for mobile access and cross-device transfers.",
+    },
+    {
+      icon: Search,
+      title: "Smart Search",
+      description:
+        "Find files instantly with powerful search filters by name, type, date, and team across your entire library.",
+    },
+    {
+      icon: Mail,
+      title: "Email Integration",
+      description:
+        "Send files directly via email with custom templates. Recipients get secure download links automatically.",
+    },
+    {
+      icon: Smartphone,
+      title: "Mobile Optimized",
+      description:
+        "Fully responsive design works perfectly on desktop, tablet, and mobile with touch-friendly interactions.",
+    },
+  ];
+
+  const teamFeatures = [
+    {
+      icon: UserPlus,
+      title: "Public Team Discovery",
+      description:
+        "Browse and join public teams or keep your team private. Search through hundreds of open collaboration spaces.",
+    },
+    {
+      icon: Settings,
+      title: "Granular Permissions",
+      description:
+        "Team leaders control who can upload, download, and delete files. Individual file ownership ensures security.",
+    },
+    {
+      icon: Cloud,
+      title: "Real-time Sync",
+      description:
+        "All team members see file updates instantly. No refresh needed - everything syncs in real-time across devices.",
     },
   ];
 
@@ -258,7 +281,7 @@ export default function FileDropLanding() {
       role: "Product Manager at TechCorp",
       avatar: "/professional-woman-diverse.png",
       quote:
-        "File Drop transformed how our team collaborates. The real-time sync is incredible!",
+        "File Drop transformed how our remote team collaborates. The real-time sync and team features are incredible!",
       rating: 5,
     },
     {
@@ -266,7 +289,7 @@ export default function FileDropLanding() {
       role: "Creative Director",
       avatar: "/creative-professional-man.png",
       quote:
-        "Finally, a file sharing platform that doesn't compromise on security or speed.",
+        "Finally, a file sharing platform that doesn't compromise on security or speed. The bulk operations save hours.",
       rating: 5,
     },
     {
@@ -274,245 +297,414 @@ export default function FileDropLanding() {
       role: "Startup Founder",
       avatar: "/entrepreneur-woman.png",
       quote:
-        "The public upload feature is a game-changer for collecting client assets.",
+        "The public upload feature is a game-changer for collecting client assets. QR codes make mobile sharing effortless.",
       rating: 5,
     },
   ];
 
-  const partnerLogos = [
-    "TechCorp",
-    "InnovateLab",
-    "DesignStudio",
-    "StartupHub",
-    "CreativeAgency",
-    "DataFlow",
+  const stats = [
+    { number: "10,000+", label: "Files Shared Daily" },
+    { number: "500+", label: "Active Teams" },
+    { number: "99.9%", label: "Uptime" },
+    { number: "256-bit", label: "Encryption" },
   ];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+      },
+    },
+  };
 
   return (
     <div className="w-full bg-background text-foreground flex flex-col overflow-hidden">
       {/* Hero Section */}
-      <section className="relative min-h-[calc(100vh-72px)] flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/10 px-4 sm:px-6 lg:px-8 pt-24 pb-16">
+      <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
         {/* Animated background particles */}
         <div className="absolute inset-0 overflow-hidden">
           {dotsPositions.map((dot, i) => (
             <motion.div
               key={i}
-              className="absolute w-2 h-2 bg-primary/20 rounded-full"
+              className="absolute w-1 h-1 bg-primary/30 rounded-full"
               style={{
                 left: `${dot.left}%`,
                 top: `${dot.top}%`,
               }}
               animate={{
-                y: [0, -30, 0],
+                y: [0, -20, 0],
                 opacity: [0.3, 1, 0.3],
+                scale: [1, 1.2, 1],
               }}
               transition={{
                 duration: dot.duration,
-                repeat: Number.POSITIVE_INFINITY,
+                repeat: Infinity,
                 delay: dot.delay,
               }}
             />
           ))}
         </div>
 
+        {/* Glassmorphism background blobs */}
+        <div className="absolute inset-0">
+          <motion.div
+            className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"
+            animate={{
+              x: [0, 50, 0],
+              y: [0, -30, 0],
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+          <motion.div
+            className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"
+            animate={{
+              x: [0, -30, 0],
+              y: [0, 20, 0],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        </div>
+
         <div className="container mx-auto max-w-7xl grid lg:grid-cols-2 gap-12 xl:gap-16 items-center relative z-10">
-          {/* Left side - Text */}
+          {/* Left side - Hero Content */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
-            className="space-y-8 text-center lg:text-left px-4 lg:px-0"
+            className="space-y-8 text-center lg:text-left"
           >
-            <Badge variant="secondary" className="w-fit mx-auto lg:mx-0">
-              🚀 The Future of File Sharing
-            </Badge>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Badge variant="secondary" className="mb-4">
+                🚀 The Future of File Sharing
+              </Badge>
+            </motion.div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent leading-tight">
-              Drop. Share. Collaborate — Without Limits.
-            </h1>
+            <motion.h1
+              className="text-6xl md:text-7xl font-extrabold tracking-tight text-primary leading-none"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              Secure File
+              <br />
+              <span className="text-foreground">Collaboration</span>
+              <br />
+              <span className="text-muted-foreground text-4xl md:text-5xl">
+                Made Simple
+              </span>
+            </motion.h1>
 
-            <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              Powerful file management with public uploads, team collaboration,
-              and real-time sync in one secure platform.
-            </p>
+            <motion.p
+              className="text-xl text-muted-foreground max-w-2xl leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              Upload, share, and collaborate on files with advanced security,
+              real-time team collaboration, and powerful analytics. Join
+              thousands of teams who trust File Drop for their file management
+              needs.
+            </motion.p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
-              <Link href={"/dashboard"}>
-                <Button size="lg" className="group">
-                  Get Started
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            <motion.div
+              className="flex flex-col sm:flex-row gap-4 pt-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <Link href="/dashboard">
+                <Button size="lg" className="group px-8 py-6 text-lg">
+                  Get Started Free
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Button size="lg" variant="outline">
-                Explore Features
-              </Button>
-              <Link href={"/public"}>
-                <Button size="lg" variant="secondary" className="group">
-                  <Upload className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
-                  Public Uploads
+              <Link href="/public">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="group px-8 py-6 text-lg"
+                >
+                  <Upload className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                  Try Public Upload
                 </Button>
               </Link>
-            </div>
+            </motion.div>
+
+            {/* Stats */}
+            <motion.div
+              className="grid grid-cols-2 lg:grid-cols-4 gap-6 pt-12"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+            >
+              {stats.map((stat, i) => (
+                <div key={i} className="text-center lg:text-left">
+                  <div className="text-2xl font-bold text-primary">
+                    {stat.number}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </motion.div>
           </motion.div>
 
-          {/* Right side - Dashboard mockup */}
+          {/* Right side - Interactive Demo */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative px-4 lg:px-0"
+            className="relative"
           >
-            <Card className="backdrop-blur-sm bg-card/50 border-border/50 shadow-2xl">
-              <CardContent className="p-6">
-                <div className="space-y-4">
+            <Card className="bg-background/80 backdrop-blur-md border-border/50 shadow-2xl">
+              <CardContent className="p-8">
+                <div className="space-y-6">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold">Recent Files</h3>
+                    <h3 className="text-xl font-semibold text-foreground">
+                      Recent Activity
+                    </h3>
                     <div className="flex -space-x-2">
                       {[1, 2, 3].map((i) => (
-                        <Avatar
+                        <motion.div
                           key={i}
-                          className="w-6 h-6 border-2 border-background"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: 0.8 + i * 0.1 }}
                         >
-                          <AvatarImage
-                            src={
-                              i === 1
-                                ? "/professional-woman-diverse.png"
-                                : i === 2
-                                  ? "/creative-professional-man.png"
-                                  : "/entrepreneur-woman.png"
-                            }
-                            alt={`User ${i}`}
-                          />
-                          <AvatarFallback></AvatarFallback>
-                        </Avatar>
+                          <Avatar className="w-8 h-8 border-2 border-background">
+                            <AvatarImage
+                              src={
+                                i === 1
+                                  ? "/professional-woman-diverse.png"
+                                  : i === 2
+                                    ? "/creative-professional-man.png"
+                                    : "/entrepreneur-woman.png"
+                              }
+                              alt={`User ${i}`}
+                            />
+                            <AvatarFallback className="text-xs">
+                              U{i}
+                            </AvatarFallback>
+                          </Avatar>
+                        </motion.div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {[
                       {
                         name: "Project Proposal.pdf",
                         size: "2.4 MB",
                         icon: FileText,
+                        time: "2m ago",
                       },
                       {
                         name: "Design Assets.zip",
                         size: "15.7 MB",
-                        icon: ImageIcon,
+                        icon: Archive,
+                        time: "5m ago",
                       },
-                      { name: "Demo Video.mp4", size: "45.2 MB", icon: Video },
-                      { name: "Soundtrack.mp3", size: "8.1 MB", icon: Music },
+                      {
+                        name: "Demo Video.mp4",
+                        size: "45.2 MB",
+                        icon: Video,
+                        time: "10m ago",
+                      },
+                      {
+                        name: "Presentation.pptx",
+                        size: "8.1 MB",
+                        icon: FileText,
+                        time: "15m ago",
+                      },
                     ].map((file, i) => (
                       <motion.div
                         key={file.name}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 + i * 0.1 }}
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 1 + i * 0.1 }}
+                        className="flex items-center gap-4 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors group cursor-pointer"
                       >
-                        <file.icon className="h-4 w-4 text-primary" />
+                        <div className="p-2 rounded-md bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+                          <file.icon className="h-4 w-4" />
+                        </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
+                          <p className="text-sm font-medium text-foreground truncate">
                             {file.name}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {file.size}
+                            {file.size} • {file.time}
                           </p>
                         </div>
+                        <Download className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                       </motion.div>
                     ))}
+                  </div>
+
+                  <div className="pt-4 border-t border-border/50">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        Storage used
+                      </span>
+                      <span className="font-medium text-foreground">
+                        7.2 GB of 10 GB
+                      </span>
+                    </div>
+                    <div className="mt-2 h-2 bg-muted/30 rounded-full overflow-hidden">
+                      <motion.div
+                        className="h-full bg-primary rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{ width: "72%" }}
+                        transition={{ delay: 1.5, duration: 1 }}
+                      />
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Floating icons */}
+            {/* Floating feature icons */}
             {[
-              { icon: Folder, position: "top-4 -right-4" },
-              { icon: Users, position: "bottom-4 -left-4" },
-              { icon: Upload, position: "-top-2 left-1/2" },
-              { icon: Share2, position: "-bottom-2 right-1/3" },
-            ].map(({ icon: Icon, position }, i) => (
+              { icon: Shield, position: "top-4 -right-4", delay: 1.8 },
+              { icon: Users, position: "bottom-4 -left-4", delay: 2.0 },
+              { icon: Globe2, position: "-top-2 left-1/2", delay: 2.2 },
+              { icon: BarChart3, position: "-bottom-2 right-1/3", delay: 2.4 },
+            ].map(({ icon: Icon, position, delay }, i) => (
               <motion.div
                 key={i}
-                className={`absolute ${position} w-12 h-12 bg-primary/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-primary/20`}
-                animate={{
-                  y: [0, -10, 0],
-                  rotate: [0, 5, -5, 0],
-                }}
-                transition={{
-                  duration: 4,
-                  repeat: Number.POSITIVE_INFINITY,
-                  delay: i * 0.5,
-                }}
+                className={`absolute ${position} w-14 h-14 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-border/50 shadow-lg`}
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ delay, duration: 0.5 }}
+                whileHover={{ scale: 1.1 }}
               >
-                <Icon className="h-5 w-5 text-primary" />
+                <Icon className="h-6 w-6 text-primary" />
               </motion.div>
             ))}
           </motion.div>
         </div>
       </section>
 
-      {/* Feature Marquee */}
-      <section className="py-12 bg-muted/50 overflow-hidden">
-        <Marquee className="py-4">
-          {[
-            "🔒 End-to-End Encryption",
-            "👥 Real-Time Collaboration",
-            "📊 Live Analytics",
-            "🌐 Public & Private Sharing",
-            "⚡ Lightning-Fast Uploads",
-            "📱 Mobile Optimized",
-          ].map((feature, i) => (
-            <motion.div
-              key={i}
-              className="bg-background/80 backdrop-blur-sm px-6 py-3 rounded-full border border-border/50 hover:scale-105 transition-transform cursor-pointer"
-              whileHover={{ scale: 1.05 }}
-            >
-              <span className="text-sm font-medium whitespace-nowrap">
-                {feature}
-              </span>
-            </motion.div>
-          ))}
-        </Marquee>
-      </section>
-
-      {/* Feature Grid */}
-      <section className="py-20 lg:py-32 overflow-hidden">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Main Features Section */}
+      <section className="py-32 px-4 sm:px-6 lg:px-8 bg-secondary/20">
+        <div className="container mx-auto max-w-7xl">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="text-center mb-16 lg:mb-20"
+            className="text-center mb-20"
           >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-              Everything You Need to Share Files Securely
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-primary mb-6">
+              Everything You Need for
+              <br />
+              <span className="text-foreground">Secure File Management</span>
             </h2>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              From simple file sharing to complex team collaboration, File Drop
-              has all the tools you need.
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              From simple uploads to complex team workflows, File Drop provides
+              all the tools you need for modern file collaboration.
             </p>
           </motion.div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, i) => (
+          <motion.div
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            {mainFeatures.map((feature) => (
+              <motion.div
+                key={feature.title}
+                variants={itemVariants}
+                whileHover={{ y: -10, scale: 1.02 }}
+                className="group"
+              >
+                <Card className="h-full bg-background/80 backdrop-blur-md border-border/50 hover:shadow-xl transition-all duration-300">
+                  <CardContent className="p-8 space-y-6">
+                    <div
+                      className={`w-16 h-16 rounded-2xl ${feature.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      <feature.icon className="h-8 w-8" />
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground">
+                      {feature.title}
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Advanced Features Section */}
+      <section className="py-32 px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto max-w-7xl">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-primary mb-6">
+              Advanced Features
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Powerful tools that scale with your needs
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {advancedFeatures.map((feature, i) => (
               <motion.div
                 key={feature.title}
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
                 viewport={{ once: true }}
+                whileHover={{ scale: 1.05 }}
+                className="group cursor-pointer"
               >
-                <Card className="h-full backdrop-blur-sm bg-card/50 border-border/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 group">
+                <Card className="h-full bg-background/50 backdrop-blur-sm border-border/50 hover:bg-background/80 transition-all duration-300">
                   <CardContent className="p-6 space-y-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <feature.icon className="h-6 w-6 text-primary-foreground" />
+                    <div className="w-12 h-12 bg-accent/10 text-accent rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <feature.icon className="h-6 w-6" />
                     </div>
-                    <h3 className="text-xl font-semibold">{feature.title}</h3>
-                    <p className="text-muted-foreground">
+                    <h3 className="text-lg font-semibold text-foreground">
+                      {feature.title}
+                    </h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
                       {feature.description}
                     </p>
                   </CardContent>
@@ -523,144 +715,313 @@ export default function FileDropLanding() {
         </div>
       </section>
 
-      {/* Analytics Panel */}
-      <section className="py-20 lg:py-32 bg-gradient-to-br from-muted/30 to-primary/5 overflow-hidden">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Team Collaboration Showcase */}
+      <section className="py-32 px-4 sm:px-6 lg:px-8 bg-secondary/20">
+        <div className="container mx-auto max-w-7xl">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="space-y-8"
+            >
+              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-primary">
+                Built for Teams
+              </h2>
+              <p className="text-xl text-muted-foreground leading-relaxed">
+                Create private teams or join public communities. Control
+                permissions, track activity, and collaborate seamlessly across
+                any project.
+              </p>
+
+              <div className="space-y-6">
+                {teamFeatures.map((feature, i) => (
+                  <motion.div
+                    key={feature.title}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6, delay: i * 0.1 }}
+                    viewport={{ once: true }}
+                    className="flex gap-4"
+                  >
+                    <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                      <feature.icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-2">
+                        {feature.title}
+                      </h3>
+                      <p className="text-muted-foreground text-sm leading-relaxed">
+                        {feature.description}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="flex gap-4">
+                <Link href="/dashboard/teams">
+                  <Button size="lg" className="group">
+                    <Users className="mr-2 h-5 w-5" />
+                    Create Team
+                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+                <Link href="/dashboard/public-teams">
+                  <Button size="lg" variant="outline">
+                    <Globe2 className="mr-2 h-5 w-5" />
+                    Browse Public Teams
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              <Card className="bg-background/80 backdrop-blur-md border-border/50 shadow-2xl">
+                <CardContent className="p-8">
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold">
+                        Team: Design Squad
+                      </h3>
+                      <Badge
+                        variant="secondary"
+                        className="bg-primary/10 text-primary"
+                      >
+                        <Globe2 className="w-3 h-3 mr-1" />
+                        Public
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src="/professional-woman-diverse.png" />
+                          <AvatarFallback>SC</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">
+                            Sarah Chen uploaded
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Design System v2.0
+                          </p>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          2m ago
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src="/creative-professional-man.png" />
+                          <AvatarFallback>MJ</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">
+                            Marcus joined the team
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Welcome to Design Squad!
+                          </p>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          5m ago
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src="/entrepreneur-woman.png" />
+                          <AvatarFallback>ER</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">
+                            Elena shared via email
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Client Presentations.zip
+                          </p>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          10m ago
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-border/50">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          24 members • 156 files
+                        </span>
+                        <Button size="sm" variant="secondary">
+                          <UserPlus className="w-4 h-4 mr-1" />
+                          Join Team
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Floating team icons */}
+              <motion.div
+                className="absolute -top-4 -right-4 w-12 h-12 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-border/50 shadow-lg"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              >
+                <Settings className="h-5 w-5 text-primary" />
+              </motion.div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Analytics Showcase */}
+      <section className="py-32 px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto max-w-7xl">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="text-center mb-16 lg:mb-20"
+            className="text-center mb-20"
           >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-primary mb-6">
               Real-Time Analytics & Insights
             </h2>
-            <p className="text-lg text-muted-foreground">
-              Track your file sharing performance with detailed analytics
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Track your file sharing performance with detailed analytics and
+              beautiful visualizations
             </p>
           </motion.div>
 
-          <Card className="max-w-4xl mx-auto backdrop-blur-sm bg-card/50 border-border/50">
-            <CardContent className="p-8">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">
-                      Upload Activity
-                    </h3>
-                    <LineChart />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center p-4 bg-muted/50 rounded-lg">
-                      <p className="text-2xl font-bold text-primary">
-                        <AnimatedCounter end={4521} />
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Files Shared Today
-                      </p>
-                    </div>
-                    <div className="text-center p-4 bg-muted/50 rounded-lg">
-                      <p className="text-2xl font-bold text-primary">
-                        <AnimatedCounter end={1247} />
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Active Users
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold">Storage Usage</h3>
-                      <p className="text-sm text-muted-foreground">
-                        7.2 GB of 10 GB used
-                      </p>
-                    </div>
-                    <DonutChart />
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-primary rounded-full"></div>
-                        Documents
-                      </span>
-                      <span>3.2 GB</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-chart-2 rounded-full"></div>
-                        Images
-                      </span>
-                      <span>2.8 GB</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-chart-3 rounded-full"></div>
-                        Videos
-                      </span>
-                      <span>1.2 GB</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* Partner Logos */}
-      <section className="py-16 bg-muted/30 overflow-hidden">
-        <div className="container mx-auto px-4">
           <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="max-w-5xl mx-auto"
           >
-            <h2 className="text-2xl font-semibold mb-2">
-              Trusted by Teams Worldwide
-            </h2>
-            <p className="text-muted-foreground">
-              Join thousands of companies using File Drop
-            </p>
-          </motion.div>
+            <Card className="bg-background/80 backdrop-blur-md border-border/50 shadow-2xl">
+              <CardContent className="p-12">
+                <div className="grid md:grid-cols-2 gap-12">
+                  <div className="space-y-8">
+                    <div>
+                      <h3 className="text-2xl font-bold text-foreground mb-6">
+                        Upload Activity
+                      </h3>
+                      <LineChart />
+                    </div>
 
-          <Marquee className="py-8">
-            {partnerLogos.map((logo, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-center h-16 px-8 bg-background/50 backdrop-blur-sm rounded-lg border border-border/50 hover:bg-background/80 transition-colors"
-              >
-                <span className="text-lg font-semibold text-muted-foreground hover:text-foreground transition-colors">
-                  {logo}
-                </span>
-              </div>
-            ))}
-          </Marquee>
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="text-center p-6 bg-secondary/20 rounded-xl">
+                        <p className="text-3xl font-bold text-primary mb-2">
+                          <AnimatedCounter end={4521} />
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Files Shared Today
+                        </p>
+                      </div>
+                      <div className="text-center p-6 bg-secondary/20 rounded-xl">
+                        <p className="text-3xl font-bold text-primary mb-2">
+                          <AnimatedCounter end={1247} />
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Active Users
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-8">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-2xl font-bold text-foreground">
+                          Storage Usage
+                        </h3>
+                        <p className="text-muted-foreground">
+                          7.2 GB of 10 GB used
+                        </p>
+                      </div>
+                      <DonutChart />
+                    </div>
+
+                    <div className="space-y-4">
+                      {[
+                        {
+                          type: "Documents",
+                          size: "3.2 GB",
+                          color: "bg-primary",
+                        },
+                        {
+                          type: "Images",
+                          size: "2.8 GB",
+                          color: "bg-secondary",
+                        },
+                        { type: "Videos", size: "1.2 GB", color: "bg-accent" },
+                        { type: "Archives", size: "0.8 GB", color: "bg-muted" },
+                      ].map((item, i) => (
+                        <motion.div
+                          key={item.type}
+                          initial={{ opacity: 0, x: 20 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.5 + i * 0.1 }}
+                          viewport={{ once: true }}
+                          className="flex items-center justify-between text-sm"
+                        >
+                          <span className="flex items-center gap-3">
+                            <div
+                              className={`w-3 h-3 ${item.color} rounded-full`}
+                            ></div>
+                            <span className="text-foreground">{item.type}</span>
+                          </span>
+                          <span className="text-muted-foreground">
+                            {item.size}
+                          </span>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    <div className="pt-6">
+                      <Link href="/dashboard/profile">
+                        <Button variant="outline" className="w-full">
+                          <BarChart3 className="mr-2 h-4 w-4" />
+                          View Full Analytics
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 lg:py-32 overflow-hidden">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-32 px-4 sm:px-6 lg:px-8 bg-secondary/20">
+        <div className="container mx-auto max-w-7xl">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="text-center mb-16 lg:mb-20"
+            className="text-center mb-20"
           >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-              What Our Users Say
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-primary mb-6">
+              Trusted by Teams Worldwide
             </h2>
-            <p className="text-lg md:text-xl text-muted-foreground">
-              Don&apos;t just take our word for it
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Join thousands of satisfied users who have transformed their file
+              sharing workflow
             </p>
           </motion.div>
 
@@ -670,24 +1031,26 @@ export default function FileDropLanding() {
                 key={testimonial.name}
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
                 viewport={{ once: true }}
+                whileHover={{ y: -10, scale: 1.02 }}
+                className="group"
               >
-                <Card className="h-full backdrop-blur-sm bg-card/50 border-border/50">
-                  <CardContent className="p-6 space-y-4">
+                <Card className="h-full bg-background/80 backdrop-blur-md border-border/50 hover:shadow-xl transition-all duration-300">
+                  <CardContent className="p-8 space-y-6">
                     <div className="flex gap-1">
-                      {[...Array(testimonial.rating)].map((_, i) => (
+                      {[...Array(testimonial.rating)].map((_, starIndex) => (
                         <Star
-                          key={i}
-                          className="h-4 w-4 fill-primary text-primary"
+                          key={starIndex}
+                          className="h-5 w-5 fill-primary text-primary"
                         />
                       ))}
                     </div>
-                    <blockquote className="text-muted-foreground italic">
+                    <blockquote className="text-muted-foreground italic text-lg leading-relaxed">
                       &ldquo;{testimonial.quote}&rdquo;
                     </blockquote>
-                    <div className="flex items-center gap-3">
-                      <Avatar>
+                    <div className="flex items-center gap-4">
+                      <Avatar className="w-12 h-12">
                         <AvatarImage
                           src={testimonial.avatar}
                           alt={testimonial.name}
@@ -700,7 +1063,9 @@ export default function FileDropLanding() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-semibold">{testimonial.name}</p>
+                        <p className="font-semibold text-foreground">
+                          {testimonial.name}
+                        </p>
                         <p className="text-sm text-muted-foreground">
                           {testimonial.role}
                         </p>
@@ -715,40 +1080,110 @@ export default function FileDropLanding() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 lg:py-32 bg-gradient-to-r from-primary to-primary/70 overflow-hidden">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="py-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute inset-0">
+          <motion.div
+            className="absolute top-0 left-0 w-full h-full bg-primary/5"
+            animate={{
+              background: [
+                "linear-gradient(45deg, hsl(var(--primary) / 0.05), hsl(var(--secondary) / 0.05))",
+                "linear-gradient(45deg, hsl(var(--secondary) / 0.05), hsl(var(--accent) / 0.05))",
+                "linear-gradient(45deg, hsl(var(--accent) / 0.05), hsl(var(--primary) / 0.05))",
+              ],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        </div>
+
+        <div className="container mx-auto max-w-7xl relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="space-y-8 lg:space-y-12"
+            className="text-center space-y-12"
           >
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground">
-              Ready to Drop Your Files the Smart Way?
-            </h2>
-            <p className="text-lg md:text-xl text-primary-foreground/80 max-w-3xl mx-auto leading-relaxed">
-              Join thousands of teams who trust File Drop for secure, fast, and
-              collaborative file sharing.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Button size="lg" variant="secondary" className="group">
-                Start Free
-                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 bg-transparent"
-              >
-                Contact Sales
-              </Button>
-              <Button size="lg" variant="secondary" className="group">
-                <Upload className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
-                Public Uploads
-              </Button>
+            <div className="space-y-6">
+              <h2 className="text-6xl md:text-7xl font-extrabold tracking-tight text-primary leading-none">
+                Ready to Transform
+                <br />
+                <span className="text-foreground">Your File Workflow?</span>
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                Join thousands of teams who trust File Drop for secure, fast,
+                and collaborative file sharing. Start your free account today
+                and experience the future of file management.
+              </p>
             </div>
+
+            <motion.div
+              className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              viewport={{ once: true }}
+            >
+              <Link href="/sign-up">
+                <Button
+                  size="lg"
+                  className="group px-12 py-6 text-lg font-semibold"
+                >
+                  Start Free Account
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Link href="/public">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="group px-12 py-6 text-lg"
+                >
+                  <Upload className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                  Try Public Upload
+                </Button>
+              </Link>
+              <Link href="/dashboard/public-teams">
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="group px-12 py-6 text-lg"
+                >
+                  <Globe2 className="mr-2 h-5 w-5" />
+                  Browse Teams
+                </Button>
+              </Link>
+            </motion.div>
+
+            <motion.div
+              className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-16"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              viewport={{ once: true }}
+            >
+              {stats.map((stat, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.6 + i * 0.1 }}
+                  viewport={{ once: true }}
+                  className="text-center"
+                >
+                  <div className="text-4xl md:text-5xl font-extrabold text-primary mb-2">
+                    {stat.number}
+                  </div>
+                  <div className="text-muted-foreground font-medium">
+                    {stat.label}
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
           </motion.div>
         </div>
       </section>

@@ -1,6 +1,7 @@
 import dbConnect from "@/database/mongodb/dbConnect";
 import Team from "@/database/mongodb/models/team.model";
 import User from "@/database/mongodb/models/user.model";
+import { logTeamActivity } from "@/utils/teamActivityLogger";
 import { Types } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -43,6 +44,14 @@ export async function PATCH(req: NextRequest) {
     await team.save();
     user.teams.push(team._id as (typeof user.teams)[0]);
     await user.save();
+
+    // Log the join activity
+    await logTeamActivity({
+      teamId,
+      clerkId,
+      action: "joined",
+    });
+
     return NextResponse.json(
       {
         message: "User added to team successfully.",

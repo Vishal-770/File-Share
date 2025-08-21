@@ -137,7 +137,7 @@ const TeamPage = () => {
   const teams: string[] = userData?.user?.teams ?? [];
 
   return (
-    <div className="min-h-screen px-6 py-8 max-w-6xl mx-auto">
+    <div className="h-full px-6 py-8 max-w-6xl mx-auto">
       <header className="mb-10 text-center">
         <h1 className="text-4xl font-extrabold mb-2 text-primary">
           Manage Your Files with Your Team

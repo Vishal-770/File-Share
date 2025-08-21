@@ -29,6 +29,8 @@ interface TeamBulkDownloadDialogProps {
   onOpenChange: (open: boolean) => void;
   files: TeamFileLite[]; // subset of selected team files
   teamName?: string;
+  teamId?: string;
+  clerkId?: string;
 }
 
 const TeamBulkDownloadDialog: React.FC<TeamBulkDownloadDialogProps> = ({
@@ -36,6 +38,8 @@ const TeamBulkDownloadDialog: React.FC<TeamBulkDownloadDialogProps> = ({
   onOpenChange,
   files,
   teamName,
+  teamId,
+  clerkId,
 }) => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [downloadAsZip, setDownloadAsZip] = useState(false);
@@ -97,6 +101,23 @@ const TeamBulkDownloadDialog: React.FC<TeamBulkDownloadDialogProps> = ({
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
           toast.success(`Downloaded zip with ${added} file(s)`);
+
+          // Log bulk download activity
+          if (teamId && clerkId && added > 0) {
+            try {
+              await fetch("/api/log-download", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  teamId,
+                  clerkId,
+                  fileCount: added,
+                }),
+              });
+            } catch (error) {
+              console.error("Error logging bulk download:", error);
+            }
+          }
         } else {
           toast.error("No files were added to the zip");
         }
@@ -121,6 +142,23 @@ const TeamBulkDownloadDialog: React.FC<TeamBulkDownloadDialogProps> = ({
           }
         }
         toast.success(`Downloaded ${success} file(s)`);
+
+        // Log bulk download activity (individual files)
+        if (teamId && clerkId && success > 0) {
+          try {
+            await fetch("/api/log-download", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                teamId,
+                clerkId,
+                fileCount: success,
+              }),
+            });
+          } catch (error) {
+            console.error("Error logging bulk download:", error);
+          }
+        }
       }
       onOpenChange(false);
     } finally {

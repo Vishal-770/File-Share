@@ -1,6 +1,7 @@
 import dbConnect from "@/database/mongodb/dbConnect";
 import FileModel from "@/database/mongodb/models/file.model";
 import Team from "@/database/mongodb/models/team.model";
+import { logTeamActivity } from "@/utils/teamActivityLogger";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -8,11 +9,19 @@ export async function POST(req: NextRequest) {
     await dbConnect();
 
     const body = await req.json();
-    const { teamId, fileIds } = body;
+    const { teamId, fileIds, clerkId } = body;
 
-    if (!teamId || !Array.isArray(fileIds) || fileIds.length === 0) {
+    if (
+      !teamId ||
+      !Array.isArray(fileIds) ||
+      fileIds.length === 0 ||
+      !clerkId
+    ) {
       return NextResponse.json(
-        { message: "teamId and fileIds are required.", success: false },
+        {
+          message: "teamId, fileIds, and clerkId are required.",
+          success: false,
+        },
         { status: 400 }
       );
     }
@@ -33,6 +42,34 @@ export async function POST(req: NextRequest) {
         },
       }
     );
+
+    // Log bulk upload activity
+    if (files.length > 1) {
+      // Log bulk upload as one activity
+      await logTeamActivity({
+        teamId,
+        clerkId,
+        action: "uploaded",
+        fileName: `${files.length} files`,
+        metadata: {
+          fileCount: files.length,
+        },
+      });
+    } else {
+      // Log single file upload
+      const file = files[0];
+      await logTeamActivity({
+        teamId,
+        clerkId,
+        action: "uploaded",
+        fileId: file.fileId,
+        fileName: file.fileName,
+        metadata: {
+          fileSize: file.size,
+          fileType: file.fileType,
+        },
+      });
+    }
 
     return NextResponse.json(
       {

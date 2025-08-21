@@ -2,6 +2,7 @@ import dbConnect from "@/database/mongodb/dbConnect";
 import Team from "@/database/mongodb/models/team.model";
 import User from "@/database/mongodb/models/user.model";
 import { CreateTeam } from "@/services/service";
+import { logTeamActivity } from "@/utils/teamActivityLogger";
 import { nanoid } from "nanoid";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -51,6 +52,16 @@ export async function POST(req: NextRequest) {
     if (newTeam && newTeam._id && user) {
       user.teams.push(newTeam._id as (typeof user.teams)[0]);
       await user.save();
+
+      // Log team creation activity
+      await logTeamActivity({
+        teamId: newTeam.teamId,
+        clerkId,
+        action: "created",
+        metadata: {
+          teamName: newTeam.teamName,
+        },
+      });
     }
     return NextResponse.json(
       {

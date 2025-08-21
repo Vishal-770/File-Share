@@ -1,6 +1,7 @@
 import dbConnect from "@/database/mongodb/dbConnect";
 import Team from "@/database/mongodb/models/team.model";
 import User from "@/database/mongodb/models/user.model";
+import { logTeamActivity } from "@/utils/teamActivityLogger";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(req: NextRequest) {
@@ -52,6 +53,13 @@ export async function PATCH(req: NextRequest) {
     await Team.updateOne({ teamId }, { $pull: { teamMembers: user._id } });
 
     await User.updateOne({ clerkId }, { $pull: { teams: team._id } });
+
+    // Log the leave activity
+    await logTeamActivity({
+      teamId,
+      clerkId,
+      action: "left",
+    });
 
     return NextResponse.json(
       {
