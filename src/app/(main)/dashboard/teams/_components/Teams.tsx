@@ -207,8 +207,8 @@ const Teams = ({ teamIds, userId }: { teamIds: string[]; userId: string }) => {
                   <span
                     className={`text-[10px] px-1.5 py-0.5 rounded border uppercase tracking-wide ${
                       team.isPublic
-                        ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30"
-                        : "bg-zinc-500/10 text-zinc-600 border-zinc-500/30"
+                        ? "bg-success/10 text-success border-success/30"
+                        : "bg-muted text-muted-foreground border-border"
                     }`}
                   >
                     {team.isPublic ? "Public" : "Private"}
@@ -229,11 +229,11 @@ const Teams = ({ teamIds, userId }: { teamIds: string[]; userId: string }) => {
                       })
                     }
                     className={`ml-auto inline-flex items-center h-6 w-11 rounded-full transition-colors relative focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
-                      team.isPublic ? "bg-emerald-500/70" : "bg-zinc-500/40"
+                      team.isPublic ? "bg-success/80" : "bg-muted"
                     } ${togglingId === team.teamId ? "opacity-60" : ""}`}
                   >
                     <span
-                      className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform flex items-center justify-center text-[9px] font-medium ${
+                      className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-card shadow transition-transform flex items-center justify-center text-[9px] font-medium text-foreground ${
                         team.isPublic ? "translate-x-5" : "translate-x-0"
                       }`}
                     >
@@ -284,8 +284,8 @@ const Teams = ({ teamIds, userId }: { teamIds: string[]; userId: string }) => {
                     </p>
                   </div>
                 ) : (
-                  <p className="text-sm text-yellow-600 flex items-center gap-1">
-                    <AlertTriangle className="w-4 h-4" />
+                  <p className="text-sm text-warning flex items-center gap-1">
+                    <AlertTriangle className="w-4 h-4 text-warning" />
                     No Team Leader Assigned
                   </p>
                 )}

@@ -446,26 +446,11 @@ export default function FileDropLanding() {
               <Link href="/public">
                 <Button
                   size="lg"
-                  className="relative overflow-hidden border-0 px-8 py-6 text-lg font-semibold text-white bg-gradient-to-r from-[#8b5cf6] via-[#ec4899] to-[#f97316] shadow-[0_15px_45px_rgba(236,72,153,0.35)] transition-transform duration-300 group"
+                  variant="secondary"
+                  className="px-8 py-6 text-lg font-semibold gap-2"
                 >
-                  <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.55),_transparent_55%)]" />
-                  <span className="relative flex items-center gap-3">
-                    <span className="flex flex-col items-start">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-white/25 px-2 py-0.5 text-[10px] uppercase tracking-wide font-semibold">
-                        <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                        New Drop Zone
-                      </span>
-                      <span className="mt-1 text-base leading-tight">
-                        Try Public Upload
-                      </span>
-                      <span className="text-xs font-normal text-white/80">
-                        Instant link + QR code
-                      </span>
-                    </span>
-                    <span className="ml-2 flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm group-hover:scale-110 transition-transform">
-                      <Upload className="h-5 w-5" />
-                    </span>
-                  </span>
+                  <Upload className="h-5 w-5" />
+                  Try Public Upload
                 </Button>
               </Link>
             </motion.div>
