@@ -42,10 +42,10 @@ _Personal storage • Teams • Public & password‑protected sharing • Bulk a
 - Generate public collection links (multi-file public sets)
 - Password protect shared assets
 - Public download page with preview modes
-- Share via email (Resend integration) & (optional) QR generation support
+- Share via email (Gmail SMTP via Nodemailer) & (optional) QR generation support
 
 ### 📨 Email & Notifications
-- Transactional email template (Resend) for file sharing
+- Transactional email template rendered server-side and delivered through Nodemailer (Gmail SMTP)
 - Toast feedback (success / error / partial outcomes)
 
 ### 🧰 Advanced UX Enhancements
@@ -101,7 +101,7 @@ _Personal storage • Teams • Public & password‑protected sharing • Bulk a
 | State/Data | React Query (TanStack) |
 | Auth | Clerk |
 | Storage | Vercel Blob (files), MongoDB (metadata) |
-| Email | Resend |
+| Email | Nodemailer + Gmail SMTP |
 | Zip | JSZip |
 | Animations | motion / Framer Motion compatible API |
 | Misc | nanoid, date-fns, qrcode-generator (optional), radix primitives |
@@ -151,7 +151,8 @@ src/
 | NEXT_PUBLIC_SUPABASE_URL | Optional Supabase base URL |
 | NEXT_PUBLIC_SUPABASE_ANON_KEY | Supabase client key |
 | BLOB_READ_WRITE_TOKEN | Vercel Blob RW token |
-| RESEND_API_KEY | Resend email key |
+| GMAIL_USER | Gmail address used for SMTP |
+| GMAIL_APP_PASSWORD | Gmail App Password (16-character code) |
 | NEXT_PUBLIC_BASE_URL | Client base URL |
 | BASE_URL | Server base URL |
 | WEBHOOK_SECRET | Webhook signature secret |
@@ -170,7 +171,7 @@ src/
 - Clerk account
 - Supabase account
 - Vercel account (for blob storage)
-- Resend account (for emails)
+- Gmail account with App Password (for emails)
 
 ### Installation & Run
 
@@ -207,7 +208,8 @@ src/
    BLOB_READ_WRITE_TOKEN=your_vercel_blob_token
    
    # Email
-   RESEND_API_KEY=your_resend_api_key
+   GMAIL_USER=your_gmail_address
+   GMAIL_APP_PASSWORD=your_gmail_app_password
    
    # App Configuration
    NEXT_PUBLIC_BASE_URL=http://localhost:3000
@@ -305,7 +307,7 @@ MIT © Your Name
 - Next.js / Vercel team
 - Clerk authentication platform
 - Shadcn/UI & Radix primitives
-- Resend for transactional email
+- Nodemailer community for SMTP tooling
 
 ---
 

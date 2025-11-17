@@ -62,7 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MongoDB for data storage
 - Supabase for public files
 - Vercel Blob for file storage
-- Resend for email delivery
+- Nodemailer (Gmail SMTP) for email delivery
 
 ## [Unreleased]
 

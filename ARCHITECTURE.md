@@ -13,7 +13,7 @@ File Drop is a modern, secure file sharing platform built with Next.js 15, featu
 - **Authentication**: Clerk with custom pages
 - **Database**: MongoDB (primary), Supabase (public files)
 - **File Storage**: Vercel Blob
-- **Email**: Resend
+- **Email**: Nodemailer (Gmail SMTP)
 - **State Management**: React Query (TanStack Query)
 - **Form Handling**: React Hook Form
 - **Deployment**: Vercel
@@ -145,8 +145,8 @@ The app uses Clerk for authentication with custom pages:
 - File sharing notifications
 
 #### Implementation
-- Resend API for email delivery
-- React Email for templates
+- Nodemailer transport configured for Gmail SMTP
+- React components rendered via `renderToStaticMarkup`
 - Email templates in `components/emailtemplates/`
 
 ## Database Schema
@@ -362,7 +362,7 @@ const nextConfig = {
 1. **Authentication errors**: Check Clerk configuration
 2. **File upload failures**: Verify Vercel Blob token
 3. **Database connection**: Check MongoDB URL
-4. **Email not sending**: Verify Resend API key
+4. **Email not sending**: Verify Gmail credentials (`GMAIL_USER`, `GMAIL_APP_PASSWORD`)
 
 ### Debug Mode
 ```bash
