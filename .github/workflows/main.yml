@@ -1,0 +1,55 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      # -----------------------------
+      # CHECKOUT CODE
+      # -----------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------
+      # SECURITY: SECRET SCANNING
+      # -----------------------------
+      - name: Install Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+
+      - name: Run secret scan
+        run: gitleaks detect --source . --no-banner
+
+      # -----------------------------
+      # SETUP NODE
+      # -----------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+
+      # -----------------------------
+      # INSTALL DEPENDENCIES
+      # -----------------------------
+      - name: Install dependencies
+        run: npm install
+
+      # -----------------------------
+      # ESLINT CHECKING
+      # -----------------------------
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: false
+
+      # -----------------------------
+      # BUILD CHECKING
+      # -----------------------------
+      - name: Build project
+        run: npm run build
