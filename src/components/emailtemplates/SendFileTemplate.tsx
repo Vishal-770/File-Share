@@ -8,7 +8,7 @@ const formatFileName = (url: string, index: number) => {
     const parsed = new URL(url);
     const lastSegment = parsed.pathname.split("/").pop() ?? "Shared File";
     return decodeURIComponent(lastSegment) || `Shared File ${index + 1}`;
-  } catch (error) {
+  } catch {
     const fallback = url.split("/").pop() ?? `Shared File ${index + 1}`;
     return decodeURIComponent(fallback);
   }

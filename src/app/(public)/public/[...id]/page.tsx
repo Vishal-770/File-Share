@@ -1,25 +1,50 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import JSZip from "jszip";
 import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/ModeToggle";
 import { GetPublicFiles } from "@/services/service";
 import { extractCleanFileName, handleDownload } from "@/utils/functions";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { File, Download, Grid3x3, List, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const PublicFiles = () => {
   const params = useParams();
-  const uniqueId = params?.id as string;
+  const slugParam = params?.id;
+  const uniqueId = Array.isArray(slugParam)
+    ? slugParam[0]
+    : typeof slugParam === "string"
+    ? slugParam
+    : "";
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [showBulkDownloadDialog, setShowBulkDownloadDialog] = useState(false);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["publicFiles", uniqueId],
@@ -33,41 +58,56 @@ const PublicFiles = () => {
   }, [data]);
 
   const { fileUrls } = data?.data || {};
+  const fileCount = fileUrls?.length ?? 0;
+  const allSelected = fileCount > 0 && selectedFiles.length === fileCount;
+  const hasSelection = selectedFiles.length > 0;
+
+  const selectedFileEntries = useMemo(() => {
+    if (!fileUrls) return [];
+    return fileUrls
+      .map((url: string, index: number) => ({ url, index }))
+      .filter(({ url }: { url: string }) => selectedFiles.includes(url))
+      .map(({ url, index }: { url: string; index: number }) => {
+        let hostname = "";
+        try {
+          hostname = new URL(url).hostname;
+        } catch {
+          hostname = "public link";
+        }
+        return {
+          id: `${index}-${url}`,
+          url,
+          name: extractCleanFileName(url) || `public-file-${index + 1}`,
+          host: hostname,
+        };
+      });
+  }, [fileUrls, selectedFiles]);
+
+  useEffect(() => {
+    if (showBulkDownloadDialog && selectedFileEntries.length === 0) {
+      setShowBulkDownloadDialog(false);
+    }
+  }, [showBulkDownloadDialog, selectedFileEntries.length]);
 
   const toggleFileSelection = (url: string) => {
-    setSelectedFiles(prev =>
-      prev.includes(url)
-        ? prev.filter(file => file !== url)
-        : [...prev, url]
+    setSelectedFiles((prev) =>
+      prev.includes(url) ? prev.filter((file) => file !== url) : [...prev, url]
     );
   };
 
   const toggleSelectAll = () => {
     if (!fileUrls) return;
-    setSelectedFiles(prev =>
+    setSelectedFiles((prev) =>
       prev.length === fileUrls.length ? [] : fileUrls
     );
   };
 
-  const handleBulkDownload = async () => {
-    if (selectedFiles.length === 0) return;
-
-    setIsDownloading(true);
-    try {
-      for (const url of selectedFiles) {
-        await handleDownload(url, extractCleanFileName(url));
-        // Small delay between downloads to prevent browser blocking
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
-      toast(`${selectedFiles.length} file(s) downloaded successfully`);
-    } catch {
-      toast("Some files failed to download", { 
-        description: "Download error", 
-        className: "bg-destructive text-white"
-      });
-    } finally {
-      setIsDownloading(false);
+  const handleOpenBulkDialog = () => {
+    if (!hasSelection) {
+      toast.warning("Select at least one file to download");
+      return;
     }
+    setShowBulkDownloadDialog(true);
   };
 
   if (isLoading) return <LoadingSkeleton />;
@@ -75,70 +115,99 @@ const PublicFiles = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-bold text-primary">Shared Files</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-primary">
+            Shared Files
+          </h1>
           <p className="text-sm md:text-base text-muted-foreground">
             {fileUrls?.length || 0} files available for download
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <ModeToggle />
+          <div className="flex items-center space-x-2 rounded-full border p-1">
             <Button
-              variant={viewMode === "grid" ? "default" : "outline"}
+              variant={viewMode === "grid" ? "default" : "ghost"}
               size="sm"
               onClick={() => setViewMode("grid")}
+              className="gap-1"
             >
-              <Grid3x3 className="w-4 h-4 mr-2" />
-              Grid
+              <Grid3x3 className="w-4 h-4" />
+              <span className="hidden sm:inline">Grid</span>
             </Button>
             <Button
-              variant={viewMode === "list" ? "default" : "outline"}
+              variant={viewMode === "list" ? "default" : "ghost"}
               size="sm"
               onClick={() => setViewMode("list")}
+              className="gap-1"
             >
-              <List className="w-4 h-4 mr-2" />
-              List
+              <List className="w-4 h-4" />
+              <span className="hidden sm:inline">List</span>
             </Button>
           </div>
         </div>
       </div>
 
-      {selectedFiles.length > 0 && (
-        <div className="bg-primary/10 p-3 rounded-lg flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Badge variant="secondary" className="px-2 py-1">
-              {selectedFiles.length} selected
-            </Badge>
+      {fileCount > 0 && (
+        <div className="rounded-2xl border bg-muted/30 p-4 space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <Checkbox
+                checked={allSelected}
+                onCheckedChange={toggleSelectAll}
+                className="mt-1 h-5 w-5 rounded-md"
+              />
+              <div>
+                <p className="font-semibold text-sm">
+                  {hasSelection
+                    ? `${selectedFiles.length} selected`
+                    : "Choose files to enable bulk actions"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Toggle individual cards or use “Select all” to queue items for
+                  download.
+                </p>
+              </div>
+            </div>
+            {hasSelection && (
+              <Badge variant="secondary" className="px-3 py-1">
+                {selectedFiles.length} ready
+              </Badge>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" size="sm" onClick={toggleSelectAll}>
+              {allSelected ? "Clear selection" : "Select all"}
+            </Button>
+            {hasSelection && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedFiles([])}
+              >
+                Reset
+              </Button>
+            )}
             <Button
-              variant="link"
               size="sm"
-              onClick={toggleSelectAll}
-              className="text-primary"
+              className="gap-2"
+              onClick={handleOpenBulkDialog}
+              disabled={!hasSelection}
             >
-              {selectedFiles.length === fileUrls?.length ? "Deselect all" : "Select all"}
+              <Download className="w-4 h-4" />
+              Multi Download / ZIP
             </Button>
           </div>
-          <Button
-            size="sm"
-            onClick={handleBulkDownload}
-            disabled={isDownloading}
-            className="gap-2"
-          >
-            {isDownloading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Download className="w-4 h-4" />
-            )}
-            Download {selectedFiles.length} file(s)
-          </Button>
         </div>
       )}
 
       {fileUrls?.length === 0 ? (
         <div className="text-center py-12 rounded-lg border border-dashed">
-          <p className="text-muted-foreground">No files available for download</p>
+          <p className="text-muted-foreground">
+            No files available for download
+          </p>
         </div>
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -163,6 +232,13 @@ const PublicFiles = () => {
           ))}
         </div>
       )}
+
+      <PublicBulkDownloadDialog
+        open={showBulkDownloadDialog}
+        onOpenChange={setShowBulkDownloadDialog}
+        files={selectedFileEntries}
+        bundleSlug={uniqueId}
+      />
     </div>
   );
 };
@@ -267,6 +343,241 @@ const FileListCard = ({
         </Button>
       </div>
     </Card>
+  );
+};
+
+interface PublicDownloadFile {
+  id: string;
+  url: string;
+  name: string;
+  host: string;
+}
+
+interface PublicBulkDownloadDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  files: PublicDownloadFile[];
+  bundleSlug: string;
+}
+
+const PublicBulkDownloadDialog = ({
+  open,
+  onOpenChange,
+  files,
+  bundleSlug,
+}: PublicBulkDownloadDialogProps) => {
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [downloadAsZip, setDownloadAsZip] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setSelectedIds(files.map((file) => file.id));
+      setDownloadAsZip(files.length > 3);
+    }
+  }, [open, files]);
+
+  const selectedItems = files.filter((file) => selectedIds.includes(file.id));
+  const allChecked = selectedIds.length === files.length && files.length > 0;
+
+  const toggle = (id: string) => {
+    if (isProcessing) return;
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((value) => value !== id) : [...prev, id]
+    );
+  };
+
+  const toggleAll = () => {
+    if (isProcessing) return;
+    setSelectedIds(allChecked ? [] : files.map((file) => file.id));
+  };
+
+  const handleConfirm = async () => {
+    if (!selectedItems.length) return;
+    setIsProcessing(true);
+    try {
+      if (downloadAsZip) {
+        const zip = new JSZip();
+        let added = 0;
+        const nameCounts: Record<string, number> = {};
+        for (const file of selectedItems) {
+          try {
+            const response = await fetch(file.url);
+            if (!response.ok) throw new Error("Failed to fetch file");
+            const blob = await response.blob();
+            const baseName = file.name || "public-file";
+            const count = nameCounts[baseName] || 0;
+            nameCounts[baseName] = count + 1;
+            const uniqueName = count ? `${baseName}-${count}` : baseName;
+            zip.file(uniqueName, blob);
+            added += 1;
+          } catch (error) {
+            console.error("Failed to add file to zip", file.name, error);
+          }
+        }
+
+        if (added === 0) {
+          throw new Error("No files could be added to the zip");
+        }
+
+        const zipBlob = await zip.generateAsync({ type: "blob" });
+        const url = URL.createObjectURL(zipBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${bundleSlug || "public-share"}-${added}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        toast.success(`Downloaded zip with ${added} file(s)`);
+      } else {
+        for (const file of selectedItems) {
+          await handleDownload(file.url, file.name);
+          await new Promise((resolve) => setTimeout(resolve, 200));
+        }
+        toast.success(`Started download for ${selectedItems.length} file(s)`);
+      }
+
+      onOpenChange(false);
+    } catch (error) {
+      console.error(error);
+      toast.error("Download failed", {
+        description: (error as Error).message,
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !isProcessing && onOpenChange(o)}>
+      <DialogContent className="max-w-xl w-full max-h-[85vh] p-0 overflow-hidden flex flex-col">
+        <div className="px-4 pt-4 pb-4 sm:px-6 sm:pt-6 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <DialogHeader className="space-y-2">
+            <DialogTitle className="flex items-center gap-2">
+              <Download className="h-5 w-5" /> Queue Downloads
+            </DialogTitle>
+            <DialogDescription>
+              Review the files you selected from this public share. Bundle them
+              into a single zip or download individually.
+            </DialogDescription>
+          </DialogHeader>
+        </div>
+
+        <div className="flex-1 flex flex-col overflow-hidden px-4 py-4 sm:px-6 gap-4">
+          <div className="flex items-center justify-between text-sm flex-wrap gap-3">
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={toggleAll}
+            >
+              <Checkbox
+                checked={allChecked}
+                onCheckedChange={toggleAll}
+                disabled={isProcessing}
+                onClick={(e) => e.stopPropagation()}
+              />
+              <span className="font-medium">Select All ({files.length})</span>
+            </div>
+            <span className="text-muted-foreground">
+              {selectedIds.length} selected
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 text-sm">
+            <Checkbox
+              id="public-as-zip"
+              checked={downloadAsZip}
+              onCheckedChange={(value) =>
+                !isProcessing && setDownloadAsZip(!!value)
+              }
+              disabled={isProcessing}
+            />
+            <label
+              htmlFor="public-as-zip"
+              className="select-none cursor-pointer text-muted-foreground"
+            >
+              Download as single .zip
+            </label>
+          </div>
+
+          <ScrollArea className="flex-1 rounded-md border">
+            <div className="p-2 space-y-2">
+              {files.map((file) => {
+                const checked = selectedIds.includes(file.id);
+                return (
+                  <div
+                    key={file.id}
+                    onClick={() => toggle(file.id)}
+                    className={`flex items-center gap-3 rounded-md border px-3 py-2 text-sm transition-colors ${
+                      checked ? "bg-primary/5 border-primary/30" : "bg-muted/40"
+                    } ${
+                      isProcessing
+                        ? "opacity-60 pointer-events-none"
+                        : "cursor-pointer hover:bg-muted/60"
+                    }`}
+                  >
+                    <Checkbox
+                      checked={checked}
+                      onCheckedChange={() => toggle(file.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      disabled={isProcessing}
+                    />
+                    <File className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate font-medium" title={file.name}>
+                        {file.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {file.host}
+                      </p>
+                    </div>
+                    {!checked && (
+                      <span className="text-xs text-muted-foreground">
+                        (skip)
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+              {files.length === 0 && (
+                <p className="text-center text-sm text-muted-foreground py-6">
+                  No files selected.
+                </p>
+              )}
+            </div>
+          </ScrollArea>
+        </div>
+
+        <div className="px-4 pb-4 pt-4 sm:px-6 sm:pb-6 border-t bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isProcessing}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirm}
+              disabled={selectedIds.length === 0 || isProcessing}
+              className="w-full sm:w-auto"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Preparing...
+                </>
+              ) : downloadAsZip ? (
+                `Download Zip (${selectedIds.length})`
+              ) : (
+                `Download ${selectedIds.length}`
+              )}
+            </Button>
+          </DialogFooter>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
