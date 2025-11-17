@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { ModeToggle } from "@/components/ModeToggle";
 import { supabase } from "@/database/supabase/supabase";
-import { UploadPublicFiles } from "@/services/service";
+import { SendEmail, UploadPublicFiles } from "@/services/service";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -17,8 +17,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Image from "next/image";
-import { X, UploadCloud, QrCode, ArrowLeft, File, Loader2 } from "lucide-react";
+import {
+  X,
+  UploadCloud,
+  QrCode,
+  ArrowLeft,
+  File,
+  Loader2,
+  Send,
+} from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
 
 export default function PublicUploadPage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -27,6 +36,9 @@ export default function PublicUploadPage() {
   const [publicUrl, setPublicUrl] = useState<string>("");
   const [showQrDialog, setShowQrDialog] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [recipientEmail, setRecipientEmail] = useState<string>("");
+  const [senderName, setSenderName] = useState<string>("");
+  const [isSendingEmail, setIsSendingEmail] = useState<boolean>(false);
   const router = useRouter();
 
   const handleFileUpload = (uploadedFiles: File[]) => {
@@ -94,6 +106,37 @@ export default function PublicUploadPage() {
       return;
     }
     uploadMutation.mutate();
+  };
+
+  const emailIsValid = /\S+@\S+\.\S+/.test(recipientEmail);
+  const canSendEmail = !!publicUrl && emailIsValid && !isSendingEmail;
+
+  const handleSendEmail = async () => {
+    if (!publicUrl) {
+      toast.error("Upload files to generate a share link first");
+      return;
+    }
+    if (!emailIsValid) {
+      toast.warning("Enter a valid recipient email");
+      return;
+    }
+
+    setIsSendingEmail(true);
+    try {
+      await SendEmail({
+        recipientEmail,
+        senderName: senderName.trim() || "Public uploader",
+        shareUrls: [publicUrl],
+      });
+      toast.success("Email sent successfully");
+      setRecipientEmail("");
+      setSenderName("");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to send email");
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   return (
@@ -248,6 +291,66 @@ export default function PublicUploadPage() {
               </Dialog>
             )}
           </div>
+
+          {publicUrl && (
+            <div className="border rounded-2xl p-4 sm:p-6 space-y-4 bg-muted/20">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    Share via Email
+                  </p>
+                  <h3 className="text-lg font-bold">
+                    Send this public link directly to someone&#39;s inbox
+                  </h3>
+                </div>
+                <a
+                  href={publicUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline break-all"
+                >
+                  {publicUrl}
+                </a>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Input
+                  type="email"
+                  placeholder="Recipient email"
+                  value={recipientEmail}
+                  onChange={(e) => setRecipientEmail(e.target.value)}
+                />
+                <Input
+                  placeholder="Your name (optional)"
+                  value={senderName}
+                  onChange={(e) => setSenderName(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={handleSendEmail}
+                  disabled={!canSendEmail}
+                  className="gap-2"
+                >
+                  {isSendingEmail ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Email Share Link
+                    </>
+                  )}
+                </Button>
+                {!emailIsValid && recipientEmail && (
+                  <p className="text-sm text-destructive">
+                    Enter a valid email to enable sending.
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
