@@ -41,17 +41,14 @@ export function NavbarDemo() {
         <NavBody>
           <NavbarLogo />
           <NavItems items={navItems} />
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-end gap-3">
             <SignedOut>
               <NavbarButton href="/sign-in">Sign In</NavbarButton>
             </SignedOut>
             <SignedIn>
               <UserButton />
             </SignedIn>
-
-            <NavbarButton className="p-0">
-              <ModeToggle />
-            </NavbarButton>
+            <ModeToggle />
           </div>
         </NavBody>
 

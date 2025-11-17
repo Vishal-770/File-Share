@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -55,6 +56,12 @@ interface FileItem {
   fileType: string;
   clerkId: string;
 }
+
+const formatFileTypeLabel = (type?: string) => {
+  if (!type) return "FILE";
+  const segments = type.split("/");
+  return segments.pop()?.toUpperCase() ?? type.toUpperCase();
+};
 
 const TeamDetail = () => {
   const router = useRouter();
@@ -404,86 +411,109 @@ const TeamDetail = () => {
             </CardHeader>
             <CardContent>
               {teamData?.files?.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {teamData.files.map((file: FileItem) => (
                     <div
                       key={file.fileId}
-                      className="border rounded-xl p-4 hover:shadow-md transition-shadow bg-background flex flex-col h-full"
+                      className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm backdrop-blur-sm transition hover:-translate-y-0.5 hover:shadow-md"
                     >
-                      <div className="flex items-start gap-3 flex-1">
-                        <div className="bg-muted rounded-lg p-3 flex-shrink-0">
-                          <File className="w-5 h-5 text-primary" />
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
+                          <File className="h-5 w-5 text-primary" />
                         </div>
-                        <div className="flex-1 min-w-0 space-y-1">
-                          <p className="text-sm font-medium truncate">
+                        <div className="flex-1 min-w-0">
+                          <p
+                            className="text-sm font-semibold text-foreground truncate"
+                            title={file.fileName}
+                          >
                             {file.fileName}
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p
+                            className="text-xs text-muted-foreground truncate"
+                            title={file.fileType}
+                          >
                             {file.fileType}
                           </p>
                         </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] font-semibold uppercase tracking-wide"
+                          >
+                            {formatFileTypeLabel(file.fileType)}
+                          </Badge>
+                          <Checkbox
+                            aria-label={`Select ${file.fileName}`}
+                            checked={selectedTeamFileIds.includes(file.fileId)}
+                            onCheckedChange={() =>
+                              handleTeamFileSelect(file.fileId)
+                            }
+                          />
+                        </div>
                       </div>
 
-                      <div className="mt-4 flex flex-wrap gap-2 justify-end">
+                      <div className="mt-4 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end">
                         <a
                           href={file.fileUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex"
+                          className="w-full sm:w-auto"
                         >
                           <Button
                             variant="outline"
                             size="sm"
-                            className="gap-1.5 text-xs h-8"
+                            aria-label={`Preview ${file.fileName}`}
+                            className="h-9 w-full justify-center px-0 text-xs sm:w-auto sm:px-3 sm:gap-1.5"
                           >
-                            <Eye className="w-3.5 h-3.5" />
-                            <span className="sr-only sm:not-sr-only">
-                              Preview
-                            </span>
+                            <Eye className="h-4 w-4" />
+                            <span className="hidden sm:inline">Preview</span>
                           </Button>
                         </a>
-                        <Button
-                          onClick={() => handleTeamFileDownload(file)}
-                          variant="outline"
-                          size="sm"
-                          className="gap-1.5 text-xs h-8"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                          <span className="sr-only sm:not-sr-only">
-                            Download
-                          </span>
-                        </Button>
-                        <Checkbox
-                          checked={selectedTeamFileIds.includes(file.fileId)}
-                          onCheckedChange={() =>
-                            handleTeamFileSelect(file.fileId)
-                          }
-                          className="h-4 w-4 ml-auto"
-                        />
-                        {file.clerkId === user?.id ? (
+                        <div className="w-full sm:w-auto">
                           <Button
-                            onClick={() => handleDeleteClick(file)}
-                            variant="destructive"
+                            onClick={() => handleTeamFileDownload(file)}
+                            variant="outline"
                             size="sm"
-                            className="gap-1.5 text-xs h-8"
+                            aria-label={`Download ${file.fileName}`}
+                            className="h-9 w-full justify-center px-0 text-xs sm:w-auto sm:px-3 sm:gap-1.5"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            <span className="sr-only sm:not-sr-only">
-                              Delete
-                            </span>
+                            <Download className="h-4 w-4" />
+                            <span className="hidden sm:inline">Download</span>
                           </Button>
-                        ) : (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="text-xs text-muted-foreground self-center">
-                                <Lock className="w-3.5 h-3.5 inline mr-1" />
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Only the uploader can delete this file</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
+                        </div>
+                        <div className="w-full sm:w-auto">
+                          {file.clerkId === user?.id ? (
+                            <Button
+                              onClick={() => handleDeleteClick(file)}
+                              variant="destructive"
+                              size="sm"
+                              aria-label={`Delete ${file.fileName}`}
+                              className="h-9 w-full justify-center px-0 text-xs sm:w-auto sm:px-3 sm:gap-1.5"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span className="hidden sm:inline">Delete</span>
+                            </Button>
+                          ) : (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-9 w-full cursor-not-allowed justify-center px-0 text-xs text-muted-foreground sm:w-auto sm:px-3 sm:gap-1.5"
+                                  disabled
+                                >
+                                  <Lock className="h-4 w-4" />
+                                  <span className="hidden sm:inline">
+                                    Restricted
+                                  </span>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Only the uploader can delete this file</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
