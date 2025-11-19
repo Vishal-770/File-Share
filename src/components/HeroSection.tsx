@@ -169,20 +169,7 @@ function DonutChart() {
 }
 
 export default function FileDropLanding() {
-  const [dotsPositions, setDotsPositions] = useState<
-    { left: number; top: number; duration: number; delay: number }[]
-  >([]);
-
   // Generate random positions on client side only to prevent hydration mismatch
-  useEffect(() => {
-    const positions = [...Array(50)].map(() => ({
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      duration: 4 + Math.random() * 3,
-      delay: Math.random() * 2,
-    }));
-    setDotsPositions(positions);
-  }, []);
 
   const mainFeatures = [
     {
@@ -335,28 +322,6 @@ export default function FileDropLanding() {
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
         {/* Animated background particles */}
-        <div className="absolute inset-0 overflow-hidden">
-          {dotsPositions.map((dot, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-1 h-1 bg-primary/30 rounded-full"
-              style={{
-                left: `${dot.left}%`,
-                top: `${dot.top}%`,
-              }}
-              animate={{
-                y: [0, -20, 0],
-                opacity: [0.3, 1, 0.3],
-                scale: [1, 1.2, 1],
-              }}
-              transition={{
-                duration: dot.duration,
-                repeat: Infinity,
-                delay: dot.delay,
-              }}
-            />
-          ))}
-        </div>
 
         {/* Glassmorphism background blobs */}
 
@@ -586,7 +551,7 @@ export default function FileDropLanding() {
       </section>
 
       {/* Main Features Section */}
-      <section className="py-32 px-4 sm:px-6 lg:px-8 bg-secondary/20">
+      <section className="py-32 px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto max-w-7xl">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -690,7 +655,7 @@ export default function FileDropLanding() {
       </section>
 
       {/* Team Collaboration Showcase */}
-      <section className="py-32 px-4 sm:px-6 lg:px-8 bg-secondary/20">
+      <section className="py-32 px-4 sm:px-6 lg:px-8 ">
         <div className="container mx-auto max-w-7xl">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <motion.div
@@ -981,7 +946,7 @@ export default function FileDropLanding() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-32 px-4 sm:px-6 lg:px-8 bg-secondary/20">
+      <section className="py-32 px-4 sm:px-6 lg:px-8 ">
         <div className="container mx-auto max-w-7xl">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
