@@ -359,32 +359,6 @@ export default function FileDropLanding() {
         </div>
 
         {/* Glassmorphism background blobs */}
-        <div className="absolute inset-0">
-          <motion.div
-            className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"
-            animate={{
-              x: [0, 50, 0],
-              y: [0, -30, 0],
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-          <motion.div
-            className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"
-            animate={{
-              x: [0, -30, 0],
-              y: [0, 20, 0],
-            }}
-            transition={{
-              duration: 10,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-        </div>
 
         <div className="container mx-auto max-w-7xl grid lg:grid-cols-2 gap-12 xl:gap-16 items-center relative z-10">
           {/* Left side - Hero Content */}
