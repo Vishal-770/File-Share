@@ -116,19 +116,19 @@ export const UpdatePassword = async (data: PasswordBody) => {
 };
 
 interface SendEmailProps {
-  recipientEmail: string;
+  recipientEmails: string[];
   senderName: string;
   shareUrls: string[];
 }
 
 export const SendEmail = async ({
-  recipientEmail,
+  recipientEmails,
   senderName,
   shareUrls,
 }: SendEmailProps) => {
   try {
     const response = await axios.post("/api/sendemail", {
-      recipientEmail,
+      recipientEmails,
       senderName,
       shareUrls,
     });
@@ -256,7 +256,9 @@ export async function UploadPublicFiles(fileUrls: string[]) {
   } catch (err) {
     console.log(err);
     throw new Error(
-      `Failed Uploading Files: ${err instanceof Error ? err.message : String(err)}`
+      `Failed Uploading Files: ${
+        err instanceof Error ? err.message : String(err)
+      }`
     );
   }
 }

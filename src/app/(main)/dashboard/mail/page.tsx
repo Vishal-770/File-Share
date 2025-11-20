@@ -8,8 +8,7 @@ import { toast } from "sonner";
 import React, { useState } from "react";
 import FileTable from "./_components/FileTable";
 import { Button } from "@/components/ui/button";
-import { useForm } from "react-hook-form";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -27,16 +26,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { FileText, Loader2, Mail, Send } from "lucide-react";
-
-interface Data {
-  email: string;
-}
+import { MultiEmailInput } from "@/components/MultiEmailInput";
 
 const Page = () => {
   const { isLoaded, user } = useUser();
   const [selectedUrls, setSelectedUrls] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [recipients, setRecipients] = useState<string[]>([]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["files", user?.id],
@@ -44,23 +41,17 @@ const Page = () => {
     enabled: isLoaded && !!user?.id,
   });
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    reset,
-    formState: { errors },
-  } = useForm<Data>();
+  const canSend = recipients.length > 0 && selectedUrls.length > 0;
 
-  const email = watch("email");
-  const isEmailValid = /\S+@\S+\.\S+/.test(email);
-  const canSend = isEmailValid && selectedUrls.length > 0;
-
-  const onSubmit = async (formData: Data) => {
+  const handleSendEmails = async () => {
+    if (!recipients.length) {
+      toast.error("Add at least one recipient email");
+      return;
+    }
     setIsSending(true);
     try {
       await SendEmail({
-        recipientEmail: formData.email,
+        recipientEmails: recipients,
         senderName:
           user?.firstName ||
           user?.emailAddresses[0]?.emailAddress ||
@@ -68,8 +59,12 @@ const Page = () => {
         shareUrls: selectedUrls,
       });
 
-      toast.success("Email sent successfully!");
-      reset();
+      toast.success(
+        `Email sent to ${recipients.length} recipient${
+          recipients.length === 1 ? "" : "s"
+        }`
+      );
+      setRecipients([]);
       setSelectedUrls([]);
       setIsDialogOpen(false);
     } catch (err) {
@@ -134,27 +129,16 @@ const Page = () => {
               <CardDescription>Send selected files via email</CardDescription>
             </CardHeader>
             <CardContent>
-              <form className="flex flex-col gap-4">
-                <div className="space-y-2">
-                  <Input
-                    {...register("email", {
-                      required: "Email is required",
-                      pattern: {
-                        value: /^\S+@\S+\.\S+$/,
-                        message: "Please enter a valid email address",
-                      },
-                    })}
-                    placeholder="recipient@example.com"
-                    className="w-full"
-                  />
-                  {errors.email && (
-                    <p className="text-sm text-destructive">
-                      {errors.email.message}
-                    </p>
-                  )}
-                </div>
+              <form className="flex flex-col gap-6">
+                <MultiEmailInput
+                  value={recipients}
+                  onChange={setRecipients}
+                  label="Recipient emails"
+                  description="Add one or more addresses. We&#39;ll send each of them the same download links."
+                  disabled={isSending}
+                />
 
-                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
                       <Button
@@ -174,13 +158,49 @@ const Page = () => {
                           Confirm File Sharing
                         </DialogTitle>
                         <DialogDescription>
-                          You&#39;re about to share {selectedUrls.length} file
-                          {selectedUrls.length !== 1 ? "s" : ""} with:
+                          You&#39;re sharing {selectedUrls.length} file
+                          {selectedUrls.length !== 1 ? "s" : ""} with{" "}
+                          {recipients.length} recipient
+                          {recipients.length !== 1 ? "s" : ""}.
                         </DialogDescription>
                       </DialogHeader>
-                      <div className="py-4">
-                        <div className="bg-muted/50 rounded-lg p-4">
-                          <p className="font-medium">{email}</p>
+                      <div className="space-y-4 py-2">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">
+                            Recipients
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {recipients.map((recipient) => (
+                              <Badge
+                                key={recipient}
+                                variant="secondary"
+                                className="px-3 py-1 text-xs"
+                              >
+                                {recipient}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">
+                            Files
+                          </p>
+                          <div className="mt-2 rounded-lg border border-dashed border-border/70 bg-muted/40 p-3 text-sm">
+                            {selectedUrls.slice(0, 3).map((url, index) => (
+                              <p
+                                key={`${url}-${index}`}
+                                className="truncate text-foreground/90"
+                              >
+                                {url}
+                              </p>
+                            ))}
+                            {selectedUrls.length > 3 && (
+                              <p className="text-xs text-muted-foreground">
+                                + {selectedUrls.length - 3} more link
+                                {selectedUrls.length - 3 !== 1 ? "s" : ""}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <DialogFooter>
@@ -188,11 +208,13 @@ const Page = () => {
                           variant="outline"
                           onClick={() => setIsDialogOpen(false)}
                           disabled={isSending}
+                          type="button"
                         >
                           Cancel
                         </Button>
                         <Button
-                          onClick={handleSubmit(onSubmit)}
+                          type="button"
+                          onClick={handleSendEmails}
                           disabled={isSending}
                         >
                           {isSending ? (
@@ -208,16 +230,28 @@ const Page = () => {
                     </DialogContent>
                   </Dialog>
 
-                  {selectedUrls.length > 0 && (
-                    <Button
-                      variant="ghost"
-                      type="button"
-                      onClick={() => setSelectedUrls([])}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      Clear Selection
-                    </Button>
-                  )}
+                  <div className="flex flex-wrap gap-2">
+                    {selectedUrls.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        type="button"
+                        onClick={() => setSelectedUrls([])}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        Clear Files
+                      </Button>
+                    )}
+                    {recipients.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        type="button"
+                        onClick={() => setRecipients([])}
+                        className="text-muted-foreground hover:text-destructive"
+                      >
+                        Clear Recipients
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </form>
             </CardContent>

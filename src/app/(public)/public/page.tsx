@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { MultiEmailInput } from "@/components/MultiEmailInput";
 
 export default function PublicUploadPage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -36,7 +37,7 @@ export default function PublicUploadPage() {
   const [publicUrl, setPublicUrl] = useState<string>("");
   const [showQrDialog, setShowQrDialog] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [recipientEmail, setRecipientEmail] = useState<string>("");
+  const [recipientEmails, setRecipientEmails] = useState<string[]>([]);
   const [senderName, setSenderName] = useState<string>("");
   const [isSendingEmail, setIsSendingEmail] = useState<boolean>(false);
   const router = useRouter();
@@ -108,28 +109,32 @@ export default function PublicUploadPage() {
     uploadMutation.mutate();
   };
 
-  const emailIsValid = /\S+@\S+\.\S+/.test(recipientEmail);
-  const canSendEmail = !!publicUrl && emailIsValid && !isSendingEmail;
+  const canSendEmail =
+    !!publicUrl && recipientEmails.length > 0 && !isSendingEmail;
 
   const handleSendEmail = async () => {
     if (!publicUrl) {
       toast.error("Upload files to generate a share link first");
       return;
     }
-    if (!emailIsValid) {
-      toast.warning("Enter a valid recipient email");
+    if (!recipientEmails.length) {
+      toast.warning("Add at least one recipient email");
       return;
     }
 
     setIsSendingEmail(true);
     try {
       await SendEmail({
-        recipientEmail,
+        recipientEmails,
         senderName: senderName.trim() || "Public uploader",
         shareUrls: [publicUrl],
       });
-      toast.success("Email sent successfully");
-      setRecipientEmail("");
+      toast.success(
+        `Email sent to ${recipientEmails.length} recipient${
+          recipientEmails.length === 1 ? "" : "s"
+        }`
+      );
+      setRecipientEmails([]);
       setSenderName("");
     } catch (error) {
       console.error(error);
@@ -312,20 +317,32 @@ export default function PublicUploadPage() {
                   {publicUrl}
                 </a>
               </div>
+              <MultiEmailInput
+                value={recipientEmails}
+                onChange={setRecipientEmails}
+                label="Recipient emails"
+                description="Press Enter, comma, or paste a list to add multiple people."
+                disabled={isSendingEmail}
+              />
               <div className="grid gap-3 sm:grid-cols-2">
-                <Input
-                  type="email"
-                  placeholder="Recipient email"
-                  value={recipientEmail}
-                  onChange={(e) => setRecipientEmail(e.target.value)}
-                />
                 <Input
                   placeholder="Your name (optional)"
                   value={senderName}
                   onChange={(e) => setSenderName(e.target.value)}
+                  disabled={isSendingEmail}
                 />
+                <div className="rounded-lg border border-dashed border-border/70 bg-background/60 p-3 text-sm text-muted-foreground">
+                  {recipientEmails.length ? (
+                    <p>
+                      Sending to {recipientEmails.length} recipient
+                      {recipientEmails.length !== 1 ? "s" : ""}
+                    </p>
+                  ) : (
+                    <p>Add recipients to enable email delivery.</p>
+                  )}
+                </div>
               </div>
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                 <Button
                   onClick={handleSendEmail}
                   disabled={!canSendEmail}
@@ -343,10 +360,16 @@ export default function PublicUploadPage() {
                     </>
                   )}
                 </Button>
-                {!emailIsValid && recipientEmail && (
-                  <p className="text-sm text-destructive">
-                    Enter a valid email to enable sending.
-                  </p>
+                {recipientEmails.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={() => setRecipientEmails([])}
+                    disabled={isSendingEmail}
+                  >
+                    Clear Recipients
+                  </Button>
                 )}
               </div>
             </div>
