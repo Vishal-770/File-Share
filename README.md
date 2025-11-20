@@ -43,9 +43,11 @@ _Personal storage • Teams • Public & password‑protected sharing • Bulk a
 - Password protect shared assets
 - Public download page with preview modes
 - Share via email (Gmail SMTP via Nodemailer) & (optional) QR generation support
+- Multi-recipient email sharing with Shadcn chip input (dashboard + public flows)
 
 ### 📨 Email & Notifications
 - Transactional email template rendered server-side and delivered through Nodemailer (Gmail SMTP)
+- MultiEmailInput component handles validation, de-duping, pasting, and bulk entry UX
 - Toast feedback (success / error / partial outcomes)
 
 ### 🧰 Advanced UX Enhancements
@@ -271,6 +273,14 @@ Auth pages are fully customizable under `(auth)` segment.
 | Get public set | `GetPublicFiles` | GET `/api/fetchPublicFiles?uniqueId=` |
 
 > Batch team deletion endpoint can be added later to optimize loops.
+
+## 📨 Multi-Recipient Email Sharing
+
+- Dedicated `MultiEmailInput` Shadcn component accepts unlimited comma/enter/paste-delimited addresses with inline badges.
+- Duplicate + invalid emails are filtered automatically, with helper text and quick "Clear all" control.
+- Available in both the dashboard Mail view (share selected uploads) and the Public uploader after generating a link.
+- Backend `/api/sendemail` now accepts `recipientEmails: string[]`, so the same payload is delivered to every recipient in a single SMTP call.
+- Toast feedback surfaces the total number of recipients that succeeded.
 
 ## 🧪 Testing & Quality
 

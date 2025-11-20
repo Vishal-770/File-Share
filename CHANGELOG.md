@@ -1,3 +1,14 @@
+## [2.1.0] - 2025-11-20
+
+### Added
+- Multi-recipient email experience powered by a new Shadcn-based `MultiEmailInput` chip field.
+- Dashboard mail view now previews all recipients and selected files before sending.
+- Public upload page supports emailing the generated share link to multiple people at once.
+
+### Changed
+- `/api/sendemail` and the client service now accept `recipientEmails: string[]`, deduplicating addresses server-side.
+- Toast messaging surfaces the recipient count for better confirmation feedback.
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
