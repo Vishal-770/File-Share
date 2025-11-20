@@ -1,0 +1,32 @@
+name: Cleanup Public Uploads
+
+on:
+  schedule:
+    - cron: "0 */12 * * *"
+  workflow_dispatch:
+
+jobs:
+  invoke-cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call cleanup endpoint
+        env:
+          CLEANUP_URL: ${{ secrets.PUBLIC_UPLOAD_CLEANUP_ENDPOINT }}
+          CLEANUP_TOKEN: ${{ secrets.PUBLIC_UPLOAD_CLEANUP_TOKEN }}
+        run: |
+          if [ -z "$CLEANUP_URL" ]; then
+            echo "PUBLIC_UPLOAD_CLEANUP_ENDPOINT secret is not configured"
+            exit 1
+          fi
+
+          if [ -z "$CLEANUP_TOKEN" ]; then
+            echo "PUBLIC_UPLOAD_CLEANUP_TOKEN secret is not configured"
+            exit 1
+          fi
+
+          echo "Invoking cleanup endpoint at $CLEANUP_URL"
+          curl -sS -X POST "$CLEANUP_URL" \
+            -H "Authorization: Bearer $CLEANUP_TOKEN" \
+            -H "Content-Type: application/json" \
+            --fail \
+            -d '{}'

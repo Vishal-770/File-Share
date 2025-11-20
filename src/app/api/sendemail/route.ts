@@ -1,20 +1,27 @@
 import { renderSendFileTemplate } from "@/components/emailtemplates/SendFileTemplate";
-import nodemailer from "nodemailer";
+import nodemailer, { type SendMailOptions } from "nodemailer";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { senderName, shareUrls } = body;
-    const recipientsInput = Array.isArray(body.recipientEmails)
-      ? body.recipientEmails
-      : body.recipientEmail
-      ? [body.recipientEmail]
-      : [];
+
+    const normalizeToStringArray = (value: unknown): string[] => {
+      if (Array.isArray(value)) {
+        return value.filter((item): item is string => typeof item === "string");
+      }
+      return typeof value === "string" ? [value] : [];
+    };
+
+    const recipientsInput = [
+      ...normalizeToStringArray(body.recipientEmails),
+      ...normalizeToStringArray(body.recipientEmail),
+    ];
     const recipients = Array.from(
       new Set(
         recipientsInput
-          .map((email: string) => email?.trim())
-          .filter((email: string | undefined) => !!email)
+          .map((email) => email.trim())
+          .filter((email): email is string => !!email)
       )
     );
 
@@ -53,7 +60,7 @@ export async function POST(req: Request) {
       shareUrls,
     });
 
-    const mailOptions = {
+    const mailOptions: SendMailOptions = {
       from: `File Drop <${process.env.GMAIL_USER}>`,
       to: recipients,
       subject: `${safeSenderName} sent you file${

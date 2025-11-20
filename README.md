@@ -158,8 +158,22 @@ src/
 | NEXT_PUBLIC_BASE_URL | Client base URL |
 | BASE_URL | Server base URL |
 | WEBHOOK_SECRET | Webhook signature secret |
+| PUBLIC_UPLOAD_CLEANUP_TOKEN | Shared secret token required to call the public upload cleanup endpoint |
+| CLEANUP_CORS_ORIGIN | Optional override for the cleanup endpoint's CORS `Access-Control-Allow-Origin` |
 
 > See `.env.local.example` for canonical list.
+
+---
+
+### 🧹 Automated Public Upload Cleanup
+
+The repository now includes an authenticated endpoint at `/api/cleanup-public-uploads` plus a scheduled GitHub Workflow (`.github/workflows/public-upload-cleanup.yml`).
+
+1. Set `PUBLIC_UPLOAD_CLEANUP_TOKEN` (and optionally `CLEANUP_CORS_ORIGIN`) in your deployment environment.
+2. Add the same values to the GitHub secrets `PUBLIC_UPLOAD_CLEANUP_TOKEN` and `PUBLIC_UPLOAD_CLEANUP_ENDPOINT` (pointing to your deployed URL for the endpoint).
+3. The workflow runs every 12 hours (and is manually triggerable) to purge public upload bundles older than 12 hours from both MongoDB and Supabase storage.
+
+This keeps temporary public shares lightweight without manual intervention.
 
 ---
 
