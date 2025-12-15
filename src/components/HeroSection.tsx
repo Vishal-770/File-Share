@@ -191,7 +191,7 @@ export default function FileDropLanding() {
       title: "Public Sharing",
       description:
         "Share files publicly with password protection, expiration dates, and QR codes for easy access on any device.",
-      color: "bg-accent/10 text-accent",
+      color: "bg-secondary/10 ",
     },
     {
       icon: Shield,
@@ -208,36 +208,42 @@ export default function FileDropLanding() {
       title: "Bulk Operations",
       description:
         "Select multiple files and perform bulk downloads as ZIP archives or bulk deletions with confirmation dialogs.",
+      color: "bg-primary/10 text-primary",
     },
     {
       icon: BarChart3,
       title: "Analytics Dashboard",
       description:
         "Track storage usage, file type distribution, and team activity with beautiful charts and insights.",
+      color: "bg-secondary/10 text-secondary",
     },
     {
       icon: QrCode,
       title: "QR Code Sharing",
       description:
         "Generate QR codes for instant file sharing. Perfect for mobile access and cross-device transfers.",
+      color: "bg-primary/10 text-primary",
     },
     {
       icon: Search,
       title: "Smart Search",
       description:
         "Find files instantly with powerful search filters by name, type, date, and team across your entire library.",
+      color: "bg-secondary/10 text-secondary",
     },
     {
       icon: Mail,
       title: "Email Integration",
       description:
-        "Send files directly via email with custom templates. Recipients get secure download links automatically.",
+        "Share files instantly via email with stunning templates. Recipients get secure, one-click download links—no bulky attachments required!",
+      color: "bg-accent/10 ",
     },
     {
       icon: Smartphone,
       title: "Mobile Optimized",
       description:
         "Fully responsive design works perfectly on desktop, tablet, and mobile with touch-friendly interactions.",
+      color: "bg-secondary/10 text-secondary",
     },
   ];
 
@@ -385,7 +391,7 @@ export default function FileDropLanding() {
               <Link href="/public">
                 <Button
                   size="lg"
-                  variant="secondary"
+                  variant="outline"
                   className="px-8 py-6 text-lg font-semibold gap-2"
                 >
                   <Upload className="h-5 w-5" />
@@ -637,7 +643,9 @@ export default function FileDropLanding() {
               >
                 <Card className="h-full bg-background/50 backdrop-blur-sm border-border/50 hover:bg-background/80 transition-all duration-300">
                   <CardContent className="p-6 space-y-4">
-                    <div className="w-12 h-12 bg-accent/10 text-accent rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div
+                      className={`w-12 h-12 ${feature.color} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}
+                    >
                       <feature.icon className="h-6 w-6" />
                     </div>
                     <h3 className="text-lg font-semibold text-foreground">
