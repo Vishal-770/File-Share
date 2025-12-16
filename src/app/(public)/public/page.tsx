@@ -25,9 +25,16 @@ import {
   File,
   Loader2,
   Send,
+  AlertTriangle,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { MultiEmailInput } from "@/components/MultiEmailInput";
 
 export default function PublicUploadPage() {
@@ -37,9 +44,11 @@ export default function PublicUploadPage() {
   const [publicUrl, setPublicUrl] = useState<string>("");
   const [showQrDialog, setShowQrDialog] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [uploadedFileUrls, setUploadedFileUrls] = useState<string[]>([]);
   const [recipientEmails, setRecipientEmails] = useState<string[]>([]);
   const [senderName, setSenderName] = useState<string>("");
   const [isSendingEmail, setIsSendingEmail] = useState<boolean>(false);
+  const [attachAsFiles, setAttachAsFiles] = useState<boolean>(false);
   const router = useRouter();
 
   const handleFileUpload = (uploadedFiles: File[]) => {
@@ -92,8 +101,9 @@ export default function PublicUploadPage() {
       setPublicUrl(res?.data?.url || "");
       return urls;
     },
-    onSuccess: () => {
+    onSuccess: (returnedUrls: string[] | undefined) => {
       setFiles([]);
+      setUploadedFileUrls(returnedUrls || []);
       setResetKey(Date.now().toString());
       setShowQrDialog(true);
       setUploadProgress(0);
@@ -114,7 +124,10 @@ export default function PublicUploadPage() {
   };
 
   const canSendEmail =
-    !!publicUrl && recipientEmails.length > 0 && !isSendingEmail;
+    !!publicUrl &&
+    recipientEmails.length > 0 &&
+    !isSendingEmail &&
+    (!attachAsFiles || (attachAsFiles && uploadedFileUrls.length > 0));
 
   const handleSendEmail = async () => {
     if (!publicUrl) {
@@ -128,10 +141,12 @@ export default function PublicUploadPage() {
 
     setIsSendingEmail(true);
     try {
+      const urlsToSend = attachAsFiles ? uploadedFileUrls : [publicUrl];
       await SendEmail({
         recipientEmails,
         senderName: senderName.trim() || "Public uploader",
-        shareUrls: [publicUrl],
+        shareUrls: urlsToSend,
+        attachFiles: attachAsFiles,
       });
       toast.success(
         `Email sent to ${recipientEmails.length} recipient${
@@ -328,6 +343,34 @@ export default function PublicUploadPage() {
                 description="Press Enter, comma, or paste a list to add multiple people."
                 disabled={isSendingEmail}
               />
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="attach-files"
+                  checked={attachAsFiles}
+                  onCheckedChange={(v) => setAttachAsFiles(Boolean(v))}
+                  disabled={isSendingEmail}
+                />
+                <label
+                  htmlFor="attach-files"
+                  className="text-sm flex items-center gap-2"
+                >
+                  Attach files to email
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="text-muted-foreground hover:text-foreground cursor-help">
+                        <AlertTriangle className="w-4 h-4" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent sideOffset={6}>
+                      <span className="text-xs">
+                        May exceed email limits (~25MB).
+                        <br />
+                        Delivery may fail.
+                      </span>
+                    </TooltipContent>
+                  </Tooltip>
+                </label>
+              </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <Input
                   placeholder="Your name (optional)"

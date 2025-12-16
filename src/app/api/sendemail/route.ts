@@ -4,7 +4,7 @@ import nodemailer, { type SendMailOptions } from "nodemailer";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { senderName, shareUrls } = body;
+    const { senderName, shareUrls, attachFiles } = body;
 
     const normalizeToStringArray = (value: unknown): string[] => {
       if (Array.isArray(value)) {
@@ -68,6 +68,54 @@ export async function POST(req: Request) {
       } via FileDrop`,
       html: htmlContent,
     };
+
+    // If requested, try to fetch each shareUrl and attach the file content
+    if (attachFiles) {
+      try {
+        const attachments: Array<{
+          filename: string;
+          content: Buffer;
+          contentType?: string | null;
+        }> = [];
+
+        for (const url of shareUrls) {
+          try {
+            const res = await fetch(url);
+            if (!res.ok) {
+              console.warn(`Failed to fetch attachment ${url}: ${res.status}`);
+              continue;
+            }
+            const arrayBuffer = await res.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            let filename = url;
+            try {
+              const parsed = new URL(url);
+              filename = parsed.pathname.split("/").pop() || filename;
+            } catch (e) {
+              // keep url as fallback
+            }
+            const contentType = res.headers.get("content-type");
+            attachments.push({ filename, content: buffer, contentType });
+          } catch (err) {
+            console.warn("Error fetching attachment:", err);
+            continue;
+          }
+        }
+
+        if (attachments.length > 0) {
+          // map to nodemailer attachment shape
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          mailOptions.attachments = attachments.map((a) => ({
+            filename: a.filename,
+            content: a.content,
+            contentType: a.contentType || undefined,
+          }));
+        }
+      } catch (err) {
+        console.warn("Failed to prepare attachments", err);
+      }
+    }
 
     const info = await transporter.sendMail(mailOptions);
 

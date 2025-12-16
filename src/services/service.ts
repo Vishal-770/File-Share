@@ -119,18 +119,21 @@ interface SendEmailProps {
   recipientEmails: string[];
   senderName: string;
   shareUrls: string[];
+  attachFiles?: boolean;
 }
 
 export const SendEmail = async ({
   recipientEmails,
   senderName,
   shareUrls,
+  attachFiles,
 }: SendEmailProps) => {
   try {
     const response = await axios.post("/api/sendemail", {
       recipientEmails,
       senderName,
       shareUrls,
+      attachFiles,
     });
 
     return response.data;
