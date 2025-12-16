@@ -92,7 +92,7 @@ export async function POST(req: Request) {
               const parsed = new URL(url);
               filename = parsed.pathname.split("/").pop() || filename;
             } catch (e) {
-              // keep url as fallback
+              console.warn("Error parsing URL for filename:", e);
             }
             const contentType = res.headers.get("content-type");
             attachments.push({ filename, content: buffer, contentType });
