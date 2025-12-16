@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useDropzone } from "react-dropzone";
 import { IconUpload } from "@tabler/icons-react";
 import { motion } from "framer-motion";
@@ -12,24 +12,21 @@ export const FileUpload = ({
   onChange?: (files: File[]) => void;
   resetKey?: string;
 }) => {
-  const [files, setFiles] = useState<File[]>([]);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
+  // Clear native input when parent requests a reset
   useEffect(() => {
-    setFiles([]);
+    if (inputRef.current) inputRef.current.value = "";
   }, [resetKey]);
 
-  const handleFileChange = (incoming: File[]) => {
-    const uniqueFiles = incoming.filter(
-      (file) => !files.find((f) => f.name === file.name && f.size === file.size)
-    );
-    const updated = [...files, ...uniqueFiles];
-    setFiles(updated);
-    onChange?.(updated);
+  const handleIncoming = (incoming: File[]) => {
+    onChange?.(incoming);
+    // Clear native input so selecting same file again triggers change
+    if (inputRef.current) inputRef.current.value = "";
   };
 
   const { getRootProps, isDragActive } = useDropzone({
-    onDrop: handleFileChange,
+    onDrop: (accepted) => handleIncoming(accepted),
     noClick: true,
     multiple: true,
   });
@@ -48,7 +45,7 @@ export const FileUpload = ({
           ref={inputRef}
           className="hidden"
           onChange={(e) => {
-            if (e.target.files) handleFileChange(Array.from(e.target.files));
+            if (e.target.files) handleIncoming(Array.from(e.target.files));
           }}
         />
 

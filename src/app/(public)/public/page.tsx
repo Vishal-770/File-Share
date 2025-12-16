@@ -43,7 +43,11 @@ export default function PublicUploadPage() {
   const router = useRouter();
 
   const handleFileUpload = (uploadedFiles: File[]) => {
-    setFiles((prev) => [...prev, ...uploadedFiles]);
+    setFiles((prev) => {
+      const map = new Map<string, File>(prev.map((f) => [f.name + f.size, f]));
+      uploadedFiles.forEach((f) => map.set(f.name + f.size, f));
+      return Array.from(map.values());
+    });
   };
 
   const removeFile = (index: number) => {
